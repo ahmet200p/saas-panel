@@ -130,8 +130,7 @@
         orders: [],
         settings: {
           id: 1,
-          tecdocApiKey: '',
-          tecdocEndpoint: '',
+          tecdocEndpoint: '/api/catalog/search-vin',
           defaultB2BDiscount: 20.0,
           defaultTaxRate: 20.0,
           platformCurrency: 'TRY',
@@ -787,8 +786,7 @@
       if (!store.settings) {
         store.settings = {
           id: 1,
-          tecdocApiKey: 'tc_live_demo_984182938472',
-          tecdocEndpoint: 'https://api.tecalliance.net/v2/catalog',
+          tecdocEndpoint: '/api/catalog/search-vin',
           defaultB2BDiscount: 20.0,
           defaultTaxRate: 20.0,
           platformCurrency: 'TRY',
@@ -797,16 +795,20 @@
         };
         saveMockStore(store);
       }
+      // Güvenlik: Dış API anahtarları istemciye ASLA gönderilmez
+      const safeSettings = { ...store.settings };
+      delete safeSettings.tecdocApiKey;
+      delete safeSettings.partsCatalogApiKey;
+
       return {
         success: true,
-        data: store.settings
+        data: safeSettings
       };
     }
 
     // 4d. PUT /admin/settings
     if (cleanEndpoint === '/admin/settings' && (method === 'PUT' || method === 'POST')) {
       if (!store.settings) store.settings = { id: 1 };
-      if (body.tecdocApiKey !== undefined) store.settings.tecdocApiKey = body.tecdocApiKey;
       if (body.tecdocEndpoint !== undefined) store.settings.tecdocEndpoint = body.tecdocEndpoint;
       if (body.defaultB2BDiscount !== undefined) store.settings.defaultB2BDiscount = parseFloat(body.defaultB2BDiscount);
       if (body.defaultTaxRate !== undefined) store.settings.defaultTaxRate = parseFloat(body.defaultTaxRate);
@@ -827,10 +829,15 @@
       }
       store.settings.updatedAt = new Date().toISOString();
       saveMockStore(store);
+
+      const safeSettings = { ...store.settings };
+      delete safeSettings.tecdocApiKey;
+      delete safeSettings.partsCatalogApiKey;
+
       return {
         success: true,
-        message: 'Sistem ayarları ve yönetici hesabı başarıyla güncellendi.',
-        data: store.settings
+        message: 'Sistem ayarları başarıyla kaydedildi.',
+        data: safeSettings
       };
     }
 
@@ -1797,6 +1804,105 @@
             vatAmount,
             totalAmount
           }
+        }
+      };
+    }
+
+    // 10a. GET /catalog/search-vin/:vin (Backend Proxy Şasi Sorgulama Mock)
+    // Güvenlik Kuralı: Dış API anahtarı istemciye aktarılmaz, istek backend proxy üzerinden yürütülür
+    if (cleanEndpoint.startsWith('/catalog/search-vin/') && method === 'GET') {
+      const parts = cleanEndpoint.split('/');
+      const rawVin = decodeURIComponent(parts[parts.length - 1] || '').trim().toUpperCase();
+
+      if (!rawVin || rawVin.length < 5) {
+        return {
+          success: false,
+          status: 400,
+          message: 'Lütfen geçerli bir Şasi (VIN) numarası giriniz.'
+        };
+      }
+
+      let brand = 'Volkswagen';
+      let models = ['Golf VII (5G1, BQ1, BE1, BE2)', 'Passat B8 (3G2, CB2)'];
+      let catalogId = 'VW2022';
+      let carId = '108422';
+
+      if (rawVin.startsWith('VF1') || rawVin.includes('RENAULT')) {
+        brand = 'Renault';
+        models = ['Megane IV Grandtour (K9A/M/N_)', 'Clio V (B7_)'];
+        catalogId = 'RN2021';
+        carId = '209311';
+      } else if (rawVin.startsWith('NM0') || rawVin.startsWith('ZFA') || rawVin.includes('FIAT')) {
+        brand = 'Fiat';
+        models = ['Egea Sedan (356_)', 'Doblo Cargo (263_)'];
+        catalogId = 'FT2020';
+        carId = '304918';
+      } else if (rawVin.startsWith('WBA') || rawVin.startsWith('WBS') || rawVin.includes('BMW')) {
+        brand = 'BMW';
+        models = ['3 Serisi (G20)', '5 Serisi (G30, F90)'];
+        catalogId = 'BM2023';
+        carId = '405819';
+      } else if (rawVin.startsWith('WDB') || rawVin.startsWith('WDC') || rawVin.includes('MERCEDES')) {
+        brand = 'Mercedes-Benz';
+        models = ['C-Serisi (W205)', 'E-Serisi (W213)'];
+        catalogId = 'MB2022';
+        carId = '501928';
+      } else if (rawVin.startsWith('WAU') || rawVin.includes('AUDI')) {
+        brand = 'Audi';
+        models = ['A4 B9 (8W2, 8WC)', 'A3 Sportback (8YA)'];
+        catalogId = 'AU2022';
+        carId = '601829';
+      } else if (rawVin.startsWith('WF0') || rawVin.includes('FORD')) {
+        brand = 'Ford';
+        models = ['Focus IV (HN)', 'Transit Custom (FY, FZ)'];
+        catalogId = 'FD2021';
+        carId = '701923';
+      } else if (rawVin.startsWith('NLH') || rawVin.startsWith('KMH') || rawVin.includes('HYUNDAI')) {
+        brand = 'Hyundai';
+        models = ['Tucson (NX4e)', 'i20 (BC3, BI3)'];
+        catalogId = 'HY2023';
+        carId = '801293';
+      }
+
+      return {
+        success: true,
+        message: 'Araç bilgileri backend proxy üzerinden başarıyla çözümlendi.',
+        data: {
+          vin: rawVin,
+          vehicleBrand: brand,
+          compatibleModels: models,
+          modelList: models,
+          catalogId: catalogId,
+          carId: carId,
+          criteria: '1.6 TDI / 115 HP / DKG-7'
+        }
+      };
+    }
+
+    // 10b. GET /catalog/search-oe/:oeNumber (Backend Proxy OE Sorgulama Mock)
+    if (cleanEndpoint.startsWith('/catalog/search-oe/') && method === 'GET') {
+      const parts = cleanEndpoint.split('/');
+      const rawOe = decodeURIComponent(parts[parts.length - 1] || '').trim().toUpperCase();
+
+      return {
+        success: true,
+        message: 'OE parça bilgisi backend proxy üzerinden başarıyla getirildi.',
+        data: {
+          oeNumber: rawOe,
+          partName: 'Fren Balatası Takımı (Ön Aks)',
+          category: 'Fren Sistemi',
+          partGroup: 'Fren Sistemi',
+          crossReferences: [
+            { brand: 'BOSCH', code: '0 986 424 797' },
+            { brand: 'BREMBO', code: 'P 85 075' },
+            { brand: 'FERODO', code: 'FDB4394' }
+          ],
+          fitmentList: [
+            '1.6 TDI (81 kW / 110 PS)',
+            '2.0 TDI (110 kW / 150 PS)',
+            '1.4 TSI (92 kW / 125 PS)'
+          ],
+          schematics: []
         }
       };
     }

@@ -1,7 +1,5 @@
-"Bayi portalında bir hesap Admin tarafından onaylansa bile, Bayi Dashboard sayfasında hala statik olarak 'Hesabınız Onay Aşamasındadır' uyarısı çıkıyor.
+1. Kritik Güvenlik Güncellemesi: Şasi sorgulama işlemi sırasında Parts Catalogs API key'imiz client-side'da ifşa oluyor.
 
-Sorun muhtemelen kullanıcının tarayıcısındaki Token/Oturum bilgisinin güncellenmemesinden kaynaklanıyor. Dashboard bileşeni (component) yüklendiğinde (mount olduğunda), kullanıcının ve firmanın en güncel durumunu backend'den çekecek (örneğin /api/auth/me veya /api/tenant/status) bir API isteği (fetch/axios) at.
+Frontend kodundaki (varsa frontend .env dosyasındaki) tüm parts-catalogs API key referanslarını tamamen sil.
 
-Gelen yanıtta hesap onaylı (APPROVED veya isActive: true) ise, frontend'deki Redux/Context/State veya LocalStorage üzerindeki eski onay bekliyor durumunu ezerek güncelle ve uyarı banner'ını kaldır.
-
-Uyarı banner'ını gösteren if/else koşulunun doğru değişkene (status mü, isActive mi) baktığından emin ol."
+Şasi sorgulama için yapılan API isteğini (fetch/axios) doğrudan dış API'ye (api.parts-catalogs.com) atmak yerine, kendi backend'imizdeki /api/catalog/search-vin/{sasi_numarasi} endpoint'ine yapacak şekilde değiştir. Backend bizim yerimize bu işlemi güvenli yapıp sonucu bize dönecek.

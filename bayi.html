@@ -3342,23 +3342,15 @@
         }
 
         try {
-          const apiBase = (typeof window !== 'undefined' && window.API_BASE)
-            ? window.API_BASE
-            : ((window.location.protocol === 'http:' || window.location.protocol === 'https:') && (window.location.port === '5000' || window.location.port === '')
-              ? '/api'
-              : 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api');
-
-          const token = localStorage.getItem('token');
-          const headers = { 'Accept': 'application/json' };
-          if (token) headers['Authorization'] = 'Bearer ' + token;
-
-          const res = await fetch(`${apiBase}/catalog/search-vin/${encodeURIComponent(rawVin)}`, {
-            method: 'GET',
-            headers
+          // Backend Güvenli Proxy: /api/catalog/search-vin/{sasi_numarasi}
+          // Parts Catalogs API anahtarı client-side'da asla ifşa edilmez ve doğrudan dış API'ye (api.parts-catalogs.com) istek ATILMAZ.
+          // İstek kendi backend'imizdeki /api/catalog/search-vin/{sasi_numarasi} endpoint'ine yönlendirilir;
+          // Backend gizli API key ile dış servisle sunucudan sunucuya konuşup sonucu döner.
+          const json = await apiFetch(`/catalog/search-vin/${encodeURIComponent(rawVin)}`, {
+            method: 'GET'
           });
-          const json = await res.json();
 
-          if (res.ok && json.success && json.data) {
+          if (json && json.success && json.data) {
             const data = json.data;
 
             // 1. Araç Markası (Select Box)
@@ -3520,39 +3512,25 @@
         }
 
         try {
-          const apiBase = (typeof window !== 'undefined' && window.API_BASE)
-            ? window.API_BASE
-            : ((window.location.protocol === 'http:' || window.location.protocol === 'https:') && (window.location.port === '5000' || window.location.port === '')
-              ? '/api'
-              : 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api');
-
-          const token = localStorage.getItem('token');
-          const headers = { 'Accept': 'application/json' };
-          if (token) headers['Authorization'] = 'Bearer ' + token;
-
-          let searchUrl = `${apiBase}/catalog/search-oe/${encodeURIComponent(rawOe)}`;
-          const params = new URLSearchParams();
-          if (rawBrand) params.append('brand', rawBrand);
+          const queryParams = {};
+          if (rawBrand) queryParams.brand = rawBrand;
 
           // Şasi bağlamı varsa (aracın carId, criteria, catalogId) parametre olarak ekle
           if (window.currentVehicleContext) {
             const ctx = window.currentVehicleContext;
-            if (ctx.vin) params.append('vin', ctx.vin);
-            if (ctx.carId) params.append('carId', ctx.carId);
-            if (ctx.criteria) params.append('criteria', ctx.criteria);
-            if (ctx.catalogId) params.append('catalogId', ctx.catalogId);
+            if (ctx.vin) queryParams.vin = ctx.vin;
+            if (ctx.carId) queryParams.carId = ctx.carId;
+            if (ctx.criteria) queryParams.criteria = ctx.criteria;
+            if (ctx.catalogId) queryParams.catalogId = ctx.catalogId;
           }
 
-          const qs = params.toString();
-          if (qs) searchUrl += `?${qs}`;
-
-          const res = await fetch(searchUrl, {
+          // Backend Güvenli Proxy: /api/catalog/search-oe/{oeNumber}
+          const json = await apiFetch(`/catalog/search-oe/${encodeURIComponent(rawOe)}`, {
             method: 'GET',
-            headers
+            params: queryParams
           });
-          const json = await res.json();
 
-          if (res.ok && json.success && json.data) {
+          if (json && json.success && json.data) {
             const data = json.data;
 
             // 1. Parça Adı

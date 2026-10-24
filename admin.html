@@ -729,17 +729,23 @@
             </div>
             <div>
               <h4 class="settings-card-title">Parts-Catalogs & Parça Veri Entegrasyonu</h4>
-              <p class="settings-card-desc">Küresel katalog sağlayıcısı ve OE parça eşleştirme API anahtarları</p>
+              <p class="settings-card-desc">Küresel katalog sağlayıcısı ve OE parça eşleştirme altyapısı</p>
             </div>
           </div>
           <div class="settings-card-body">
             <div class="form-group">
-              <label for="setting-tecdoc-key" class="form-label" style="display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Parts Catalogs API Anahtarı</label>
-              <input type="password" id="setting-tecdoc-key" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 0.9rem;" placeholder="API Anahtarı (.env üzerinden otomatik yüklenir)" value="">
+              <label class="form-label" style="display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Parts Catalogs API Güvenlik Durumu</label>
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 1.25rem;">🔒</span>
+                <div>
+                  <div style="font-size: 0.875rem; font-weight: 700; color: #166534;">API Anahtarı Sunucu Tarafında Güvendedir (.env)</div>
+                  <div style="font-size: 0.775rem; color: #15803d; line-height: 1.4;">Parts Catalogs gizli anahtarı istemciye asla ifşa edilmez. Şasi (VIN) ve OE sorgulamaları backend proxy (/api/catalog/search-vin/:vin) üzerinden güvenli sunucudan sunucuya (server-to-server) yapılır.</div>
+                </div>
+              </div>
             </div>
             <div class="form-group">
-              <label for="setting-tecdoc-endpoint" class="form-label" style="display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Sağlayıcı API Endpoint URL</label>
-              <input type="text" id="setting-tecdoc-endpoint" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 0.9rem;" placeholder="https://webservice.tecalliance.net/v2" value="https://api.tecalliance.net/v2/catalog">
+              <label for="setting-tecdoc-endpoint" class="form-label" style="display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Backend Katalog Proxy Endpoint URL</label>
+              <input type="text" id="setting-tecdoc-endpoint" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 0.9rem; background: #f8fafc; color: #475569;" placeholder="/api/catalog/search-vin" value="/api/catalog/search-vin" readonly>
             </div>
           </div>
         </div>
@@ -2153,17 +2159,12 @@
         const res = await apiFetch('/admin/settings');
         if (res && res.success && res.data) {
           const s = res.data;
-          const keyEl = document.getElementById('setting-tecdoc-key');
           const endpointEl = document.getElementById('setting-tecdoc-endpoint');
           const discountEl = document.getElementById('setting-default-discount') || document.getElementById('setting-discount');
           const vatEl = document.getElementById('setting-tax-rate') || document.getElementById('setting-default-vat');
           const currencyEl = document.getElementById('setting-currency');
           const emailEl = document.getElementById('setting-admin-email');
 
-          if (keyEl) {
-            const apiVal = s.partsCatalogApiKey !== undefined ? s.partsCatalogApiKey : s.tecdocApiKey;
-            if (apiVal !== undefined && apiVal !== null) keyEl.value = apiVal;
-          }
           if (endpointEl && s.tecdocEndpoint) endpointEl.value = s.tecdocEndpoint;
           if (discountEl && s.defaultB2BDiscount !== undefined && s.defaultB2BDiscount !== null) discountEl.value = s.defaultB2BDiscount;
           if (vatEl && s.defaultTaxRate !== undefined && s.defaultTaxRate !== null) vatEl.value = s.defaultTaxRate;
@@ -2190,7 +2191,6 @@
         }
 
         try {
-          const keyInput = document.getElementById('setting-tecdoc-key');
           const endpointInput = document.getElementById('setting-tecdoc-endpoint');
           const discountInput = document.getElementById('setting-default-discount') || document.getElementById('setting-discount');
           const vatInput = document.getElementById('setting-tax-rate') || document.getElementById('setting-default-vat');
@@ -2215,10 +2215,9 @@
             }
           }
 
+          // Güvenlik: Dış API anahtarı (.env) sadece backend tarafında tutulur, payload içine konulmaz
           const payload = {
-            tecdocApiKey: keyInput ? keyInput.value.trim() : '',
-            partsCatalogApiKey: keyInput ? keyInput.value.trim() : '',
-            tecdocEndpoint: endpointInput ? endpointInput.value.trim() : '',
+            tecdocEndpoint: endpointInput ? endpointInput.value.trim() : '/api/catalog/search-vin',
             defaultB2BDiscount: discountInput ? (parseFloat(discountInput.value) || 0) : 20.0,
             defaultTaxRate: vatInput ? (parseFloat(vatInput.value) || 0) : 20.0,
             platformCurrency: currencyInput ? currencyInput.value.trim() : 'TRY',
@@ -2240,10 +2239,6 @@
             if (pwdConfirmInput) pwdConfirmInput.value = '';
             if (res.data) {
               const s = res.data;
-              if (keyInput) {
-                const apiVal = s.partsCatalogApiKey !== undefined ? s.partsCatalogApiKey : s.tecdocApiKey;
-                if (apiVal !== undefined && apiVal !== null) keyInput.value = apiVal;
-              }
               if (endpointInput && s.tecdocEndpoint) endpointInput.value = s.tecdocEndpoint;
               if (discountInput && s.defaultB2BDiscount !== undefined) discountInput.value = s.defaultB2BDiscount;
               if (vatInput && s.defaultTaxRate !== undefined) vatInput.value = s.defaultTaxRate;
@@ -2275,8 +2270,7 @@
       resetSettingsBtn.addEventListener('click', async function () {
         if (confirm('Ayarları varsayılan sistem değerlerine döndürüp kaydetmek istediğinize emin misiniz?')) {
           const defaultPayload = {
-            tecdocApiKey: '',
-            tecdocEndpoint: 'https://api.tecalliance.net/v2/catalog',
+            tecdocEndpoint: '/api/catalog/search-vin',
             defaultB2BDiscount: 20.0,
             defaultTaxRate: 20.0,
             platformCurrency: 'TRY',
@@ -2290,7 +2284,6 @@
             });
 
             if (res && res.success) {
-              const keyInput = document.getElementById('setting-tecdoc-key');
               const endpointInput = document.getElementById('setting-tecdoc-endpoint');
               const discountInput = document.getElementById('setting-default-discount') || document.getElementById('setting-discount');
               const vatInput = document.getElementById('setting-tax-rate') || document.getElementById('setting-default-vat');
