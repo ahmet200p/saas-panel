@@ -722,8 +722,40 @@
       const tenantId = parts[3];
       const tenant = store.tenants.find(t => t.id === tenantId);
       if (tenant) {
-        tenant.isActive = !tenant.isActive;
+        if (body.isActive !== undefined) {
+          tenant.isActive = Boolean(body.isActive);
+        } else {
+          tenant.isActive = !tenant.isActive;
+        }
+        if (body.status) {
+          tenant.status = body.status;
+        } else {
+          tenant.status = tenant.isActive ? 'APPROVED' : (tenant.status || 'PENDING');
+        }
+
+        // İlgili tenant kullanıcılarını da senkronize et
+        (store.users || []).forEach(u => {
+          if (u.tenantId === tenantId) {
+            u.status = tenant.status;
+            u.isActive = tenant.isActive;
+          }
+        });
+
         saveMockStore(store);
+
+        // Demo / yerel oturum senkronizasyonu
+        try {
+          const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+          if (localUser && (localUser.tenantId === tenantId || (localUser.tenant && localUser.tenant.id === tenantId))) {
+            localUser.status = tenant.status;
+            localUser.isActive = tenant.isActive;
+            if (localUser.tenant) {
+              localUser.tenant.status = tenant.status;
+              localUser.tenant.isActive = tenant.isActive;
+            }
+            localStorage.setItem('user', JSON.stringify(localUser));
+          }
+        } catch (e) {}
         return {
           success: true,
           message: 'Bayi durumu güncellendi',
@@ -1961,21 +1993,19 @@
         window.location.pathname.endsWith('/store')
       )) || url.includes('/store/products') || url.includes('/store/bank-info') || url.includes('/store/tenant-info');
 
-      if ((response.status === 401 || response.status === 403) && !isLoginEndpoint) {
+      if (response.status === 401 && !isLoginEndpoint) {
         if (isStoreContext) {
-          console.warn(`[API] Vitrinde yetkisiz/oturumsuz istek (${response.status}). Ziyaretçi modunda kalınacak.`);
-          if (response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          }
+          console.warn(`[API] Vitrinde yetkisiz/oturumsuz istek (401). Ziyaretçi modunda kalınacak.`);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
           if (data && typeof data === 'object') {
-            data._status = response.status;
-            data._ok = response.ok;
+            data._status = 401;
+            data._ok = false;
           }
-          return data || { success: false, status: response.status, message: 'Oturum gerekli' };
+          return data || { success: false, status: 401, message: 'Oturum gerekli' };
         }
 
-        console.warn(`[API] Yetkisiz erişim (${response.status}). Giriş sayfasına yönlendiriliyor...`);
+        console.warn(`[API] Yetkisiz erişim (401). Oturum sonlandı, giriş sayfasına yönlendiriliyor...`);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'login.html';
