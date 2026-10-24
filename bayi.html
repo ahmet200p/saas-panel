@@ -1511,6 +1511,20 @@
       }
       window.checkDealerApprovalStatus = checkDealerApprovalStatus;
 
+      // Sayfa/Sekme odağı geri geldiğinde veya başka sekmede onaylandığında otomatik senkronize et
+      window.addEventListener('focus', function () {
+        if (typeof checkDealerApprovalStatus === 'function') {
+          checkDealerApprovalStatus();
+        }
+      });
+      window.addEventListener('storage', function (e) {
+        if (!e || e.key === 'user' || e.key === 'mock_store' || e.key === 'token') {
+          if (typeof checkDealerApprovalStatus === 'function') {
+            checkDealerApprovalStatus();
+          }
+        }
+      });
+
       // 0. Güvenli HTML Kaçırma Yardımcısı (XSS Koruması)
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
