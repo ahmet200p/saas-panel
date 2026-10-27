@@ -1,5 +1,7 @@
-1. Kritik Güvenlik Güncellemesi: Şasi sorgulama işlemi sırasında Parts Catalogs API key'imiz client-side'da ifşa oluyor.
+"Projeyi genel 'SaaS' isminden çıkarıp kendi markamız olan 'AFS Systems' adına geçiriyoruz. Lütfen HTML sayfalarındaki (login.html, admin.html, bayi.html, store.html vb.) sadece görünür UI metinlerinde ve <title> etiketlerinde bulunan 'SaaS' veya 'SaaS Platform' ifadelerini 'AFS Systems' olarak değiştir.
 
-Frontend kodundaki (varsa frontend .env dosyasındaki) tüm parts-catalogs API key referanslarını tamamen sil.
+Giriş sayfasının footer kısmındaki 'Güvenli SaaS Oturum Yönetimi © 2026' yazısını 'AFS Systems © 2026' olarak güncelle.
 
-Şasi sorgulama için yapılan API isteğini (fetch/axios) doğrudan dış API'ye (api.parts-catalogs.com) atmak yerine, kendi backend'imizdeki /api/catalog/search-vin/{sasi_numarasi} endpoint'ine yapacak şekilde değiştir. Backend bizim yerimize bu işlemi güvenli yapıp sonucu bize dönecek.
+Tüm sayfaların <title> etiketlerini 'AFS Systems - Bayi Paneli', 'AFS Systems - B2B Vitrin' formatına uygun olarak düzelt.
+
+Login sayfasındaki 'TEST GİRİŞ BİLGİLERİ' (admin@sistem.com vb.) içeren bilgi kutusunu canlı ortama geçiş yaptığımız için HTML'den tamamen kaldır.
