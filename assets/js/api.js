@@ -2136,12 +2136,42 @@
 
       if (url.includes('/catalog/search-oe/') && data && data.data && typeof data.data === 'object') {
         const d = data.data;
+        const normOe = String(d.oeNumber || '').trim().toUpperCase().replace(/[\s\-_.]+/g, '');
         const pName = String(d.partName || '').toLowerCase();
         const pGroup = String(d.partGroup || d.category || '').toLowerCase();
         const isGenericFallbackPart =
           pGroup === 'genel mekanik' ||
           pName.includes('orijinal parça (') ||
           pName.includes('orijinal yedek parça (');
+
+        // Eşdeğer Renault ön fren balatası OE / referans kodları için ana OE (410601241R) çapraz referans bağlantısı
+        const renaultBrakePadEquivalents = [
+          '7701208122', '7701208422', '7701209164', '7701207066', '7701209672',
+          '8671016692', '410602192R', '098642441R', 'GDB241R', 'GDB1552',
+          'P6841R', 'FDB241R', '59841R'
+        ];
+        if (renaultBrakePadEquivalents.includes(normOe)) {
+          if (!Array.isArray(d.equivalentOEs)) d.equivalentOEs = [];
+          if (!d.equivalentOEs.includes('410601241R')) {
+            d.equivalentOEs.unshift('410601241R');
+          }
+          if (!Array.isArray(d.crossReferences)) d.crossReferences = [];
+          const hasPrimaryOe = d.crossReferences.some(c => {
+            const cCode = String((c && (c.oeNumber || c.code)) || '').trim().toUpperCase();
+            return cCode === '410601241R';
+          });
+          if (!hasPrimaryOe) {
+            d.crossReferences.unshift({
+              brand: 'Renault OEM',
+              code: '410601241R',
+              oeNumber: '410601241R',
+              name: 'Renault Ön Fren Balata Takımı (Eşdeğer OE)',
+              type: 'Eşdeğer Parça',
+              quality: 'Orijinal Ekipman (OEM)',
+              matchScore: 99
+            });
+          }
+        }
 
         if (isGenericFallbackPart) {
           d.schemas = [];

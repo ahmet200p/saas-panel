@@ -868,6 +868,14 @@
               </label>
               <span id="catalog-gallery-badge" style="font-size: 0.75rem; color: #0284c7; font-weight: 600; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">0 Görsel</span>
             </div>
+            <div id="catalog-equivalent-note" style="display: none; align-items: center; gap: 6px; margin-bottom: 8px; padding: 7px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; color: #1d4ed8; font-size: 0.76rem; font-weight: 600;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span id="catalog-equivalent-note-text"></span>
+            </div>
             <div id="catalog-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; max-height: 220px; overflow-y: auto; padding: 10px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px;">
               <!-- API'den dönen teknik şemalar ve fotoğraflar buraya eklenecektir -->
             </div>
@@ -3230,8 +3238,12 @@
         const galleryGrid = document.getElementById('catalog-gallery-grid');
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryBadge = document.getElementById('catalog-gallery-badge');
+        const eqNote = document.getElementById('catalog-equivalent-note');
+        const eqNoteText = document.getElementById('catalog-equivalent-note-text');
         if (galleryGrid) galleryGrid.innerHTML = '';
         if (galleryGroup) galleryGroup.style.display = 'none';
+        if (eqNote) eqNote.style.display = 'none';
+        if (eqNoteText) eqNoteText.textContent = '';
         if (galleryBadge) {
           galleryBadge.textContent = '0 Görsel';
           galleryBadge.style.background = '#e0f2fe';
@@ -3245,6 +3257,11 @@
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
         const galleryBadge = document.getElementById('catalog-gallery-badge');
+        const eqNote = document.getElementById('catalog-equivalent-note');
+        const eqNoteText = document.getElementById('catalog-equivalent-note-text');
+
+        if (eqNote) eqNote.style.display = 'none';
+        if (eqNoteText) eqNoteText.textContent = '';
 
         if (galleryBadge) {
           galleryBadge.textContent = '0 Görsel';
@@ -3277,10 +3294,12 @@
         ensureManualUploadActive();
       }
 
-      function renderCatalogGallery(newItems, replace = true) {
+      function renderCatalogGallery(newItems, replace = true, equivalentSourceCode = null) {
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
         const galleryBadge = document.getElementById('catalog-gallery-badge');
+        const eqNote = document.getElementById('catalog-equivalent-note');
+        const eqNoteText = document.getElementById('catalog-equivalent-note-text');
         ensureManualUploadActive();
         if (!galleryGrid) return;
 
@@ -3310,6 +3329,15 @@
         }
 
         if (galleryGroup) galleryGroup.style.display = 'block';
+        if (eqNote && eqNoteText) {
+          if (equivalentSourceCode) {
+            eqNoteText.textContent = `Bu görsel eşdeğer parçadan (${equivalentSourceCode}) alınmıştır`;
+            eqNote.style.display = 'flex';
+          } else {
+            eqNoteText.textContent = '';
+            eqNote.style.display = 'none';
+          }
+        }
         if (galleryBadge) {
           galleryBadge.textContent = `${currentCatalogImages.length} Görsel/Şema`;
           galleryBadge.style.background = '#e0f2fe';
@@ -3596,6 +3624,11 @@
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
         const galleryBadge = document.getElementById('catalog-gallery-badge');
+        const eqNote = document.getElementById('catalog-equivalent-note');
+        const eqNoteText = document.getElementById('catalog-equivalent-note-text');
+
+        if (eqNote) eqNote.style.display = 'none';
+        if (eqNoteText) eqNoteText.textContent = '';
 
         if (galleryBadge) {
           galleryBadge.textContent = '0 Görsel';
@@ -3667,22 +3700,75 @@
           // Galeri arayüzü SADECE arama API'sinin yanıtından dönen images veya schemas verisiyle dinamik olarak eşleştirilir
           const schemas = (data && Array.isArray(data.schemas)) ? data.schemas : [];
           const images = (data && Array.isArray(data.images)) ? data.images : [];
-          const allItems = schemas.length > 0
+          let allItems = schemas.length > 0
             ? [...schemas, ...images.filter(img => !schemas.some(s => (typeof s === 'string' ? s : (s && s.url)) === (typeof img === 'string' ? img : (img && img.url))))]
             : images;
 
+          let matchedEquivalentCode = null;
+
           // =========================================================================
-          // 3. AKILLI ÇAPRAZ ARAMA (CROSS-REFERENCE):
-          // Eğer doğrudan girilen koddan teknik şema bulunamadıysa (allItems.length === 0)
-          // ve henüz çapraz sorgu yapılmadıysa (!isCrossFallback), backend çapraz eşleştirme
-          // servisine danışarak asıl OE numarasını kontrol et.
+          // 2. AKILLI GÖRSEL EŞLEŞTİRME (FALLBACK FETCH):
+          // Kullanıcı bir OE numarası sorguladığında ve API'den dönen görsel
+          // (images/schemas) dizisi boşsa (uzunluğu 0 ise), işlemi hemen bitirip
+          // 'Görsel Yok' hatasını gösterme.
+          // API yanıtındaki 'Eşdeğer & Muadil Parçalar' veya 'Çapraz Referanslar'
+          // (crossReferences / equivalentOEs) dizisini kontrol et ve ilk 1 veya 2
+          // tanesi için arka planda sessiz bir 'ikincil görsel sorgusu' (fallback fetch) yap.
           // =========================================================================
-          if (allItems.length === 0 && !isCrossFallback) {
-            const matchedOe = await resolveCrossReferenceOe(rawOe);
-            if (matchedOe && matchedOe.toUpperCase() !== rawOe.toUpperCase()) {
-              showToast(`Muadil referans (${rawOe}) çözümlendi ➔ Asıl OE: ${matchedOe}. Şemalar otomatik sorgulanıyor...`, 'info');
-              inputProdOe.value = matchedOe;
-              return handleOeSearch(true, rawOe);
+          if (allItems.length === 0 && data) {
+            const candidateCodes = [];
+            const normPrimary = rawOe.trim().toUpperCase().replace(/[\s\-_.]+/g, '');
+            const pushCandidate = (rawCode) => {
+              if (!rawCode) return;
+              const cleanCode = String(rawCode).trim();
+              const normCode = cleanCode.toUpperCase().replace(/[\s\-_.]+/g, '');
+              if (!cleanCode || normCode === normPrimary) return;
+              if (!candidateCodes.some(existing => existing.toUpperCase().replace(/[\s\-_.]+/g, '') === normCode)) {
+                candidateCodes.push(cleanCode);
+              }
+            };
+
+            if (Array.isArray(data.equivalentOEs)) {
+              data.equivalentOEs.forEach(item => {
+                pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe)));
+              });
+            }
+
+            if (Array.isArray(data.crossReferences)) {
+              data.crossReferences.forEach(item => {
+                pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe)));
+              });
+            }
+
+            // İlk 1 veya 2 eşdeğer kod için sessiz ikincil görsel sorgusu (fallback fetch)
+            const fallbackCodes = candidateCodes.slice(0, 2);
+            for (const eqCode of fallbackCodes) {
+              try {
+                const eqJson = await apiFetch(`/catalog/search-oe/${encodeURIComponent(eqCode)}`, {
+                  method: 'GET',
+                  params: queryParams
+                });
+                const eqData = (eqJson && eqJson.success && eqJson.data) ? eqJson.data : null;
+                if (eqData) {
+                  const eqSchemas = Array.isArray(eqData.schemas) ? eqData.schemas : [];
+                  const eqImages = Array.isArray(eqData.images) ? eqData.images : [];
+                  const eqItems = eqSchemas.length > 0
+                    ? [...eqSchemas, ...eqImages.filter(img => !eqSchemas.some(s => (typeof s === 'string' ? s : (s && s.url)) === (typeof img === 'string' ? img : (img && img.url))))]
+                    : eqImages;
+
+                  if (eqItems.length > 0) {
+                    allItems = eqItems;
+                    matchedEquivalentCode = eqData.oeNumber || eqCode;
+                    if (!data.diagramUrl && eqData.diagramUrl) data.diagramUrl = eqData.diagramUrl;
+                    if ((!data.diagrams || data.diagrams.length === 0) && Array.isArray(eqData.diagrams)) {
+                      data.diagrams = eqData.diagrams;
+                    }
+                    break;
+                  }
+                }
+              } catch (fallbackErr) {
+                console.warn(`[EQUIVALENT_OE_FALLBACK_WARN] (${eqCode}):`, fallbackErr);
+              }
             }
           }
 
@@ -3741,15 +3827,15 @@
             }
 
             // =====================================================================
-            // 2. EMPTY STATE (BOŞ YANIT) YÖNETİMİ:
-            // Eğer API başarılı dönse bile, veritabanında o parçaya ait bir çizim/şema
-            // yoksa (görsel dizisi boş dönerse), ekrana alakasız parçalar basmak yerine
-            // 'Bu parça için teknik şema bulunmamaktadır.' uyarısı gösterilir.
+            // 3. GALERİ & EMPTY STATE (BOŞ YANIT) YÖNETİMİ:
+            // Eşdeğer kodların birinde görsel bulunursa asıl aranan parça için
+            // bulunmuş gibi ekrana yansıtılır ve bilgi notu eklenir.
+            // Hiçbirinde şema yoksa 'Bu parça için teknik şema bulunmamaktadır.' gösterilir.
             // =====================================================================
             if (allItems.length > 0) {
-              renderCatalogGallery(allItems, true);
-              const successMsg = isCrossFallback && originalRefCode
-                ? `Asıl OE (${rawOe}) şemaları başarıyla getirildi! (Muadil: ${originalRefCode})`
+              renderCatalogGallery(allItems, true, matchedEquivalentCode);
+              const successMsg = matchedEquivalentCode
+                ? `Bu görsel eşdeğer parçadan (${matchedEquivalentCode}) alınmıştır`
                 : (json.message || 'Parça OE bilgileri ve teknik şemaları başarıyla getirildi!');
               showToast(successMsg, 'success');
             } else {
