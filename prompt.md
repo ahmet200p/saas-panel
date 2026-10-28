@@ -1,9 +1,7 @@
-Katalog sorgulamasında sahte/sabit görseller başarıyla kalktı ve boş durum (empty state) tasarımı doğru çalışıyor. Ancak, '7701208122' ve '410601241R' gibi birbiriyle eşdeğer olan parçalarda, katalog API'si görseli bazen sadece tek bir ana OE numarasına bağlamış olabiliyor. Lütfen katalog sorgu (fetch) mantığına şu 'Akıllı Görsel Eşleştirme' adımını ekle:
+Mevcut parça arama fonksiyonu çok yüzeysel çalışıyor. Kullanıcı örneğin '410601241R', '7701208122' veya 'trw gdb1552' yazdığında, sistemin bu kodların birbirinin tam muadili olduğunu arka planda çözmesi ve bunu arayüzde kullanıcıya açıkça göstermesi gerekiyor. Lütfen API istek (fetch) algoritmasını ve UI tasarımını şu 3 aşamalı 'Derin Çapraz Referans' mantığına göre güncelle:
 
-Kullanıcı bir OE numarası sorguladığında ve API'den dönen görsel (images/schemas) dizisi boşsa (uzunluğu 0 ise), işlemi hemen bitirip 'Görsel Yok' hatasını gösterme.
+Çift Yönlü Derin Sorgu (Deep Cross-Match): Girilen kod bir OE numarasıysa (örn: 410601241R) buna bağlı tüm Aftermarket (yan sanayi) kodlarını (TRW, AYD, Bosch vb.) ve diğer OE revizyonlarını (7701208122) katalog API'sinden topla. Eğer girilen kod bir yan sanayi koduysa (örn: trw gdb1552), önce bunun bağlı olduğu ana OE numarasını bul, ardından o OE ağacı üzerinden tüm kardeş muadilleri (AYD, Valeo vb.) listeye dahil et.
 
-API'nin döndürdüğü yanıtın içindeki 'Eşdeğer & Muadil Parçalar' veya 'Çapraz Referanslar' (crossReferences / equivalentOEs) dizisini kontrol et.
+Eşdeğerler UI Bileşeni: Yeni Ürün Ekle sayfasındaki veri alanlarının arasına (veya sağ panele) 'Bu Parçayla Eşdeğer Kodlar (Cross-References)' adında belirgin bir bölüm/kapsayıcı ekle.
 
-Eğer eşdeğer OE numaraları veya referans kodları varsa, arka planda bu kodlardan ilk 1 veya 2 tanesi için sessiz bir 'ikincil görsel sorgusu' (fallback fetch) yap.
-
-Eğer bu eşdeğer kodların birinde görsel bulunursa, sanki asıl aradığımız parça için bulunmuş gibi o görseli ekrana yansıt ve 'Bu görsel eşdeğer parçadan (Örn: 410601241R) alınmıştır' şeklinde ufak bir bilgi notu ekle.
+Görsel Sunum (Tailwind Badges): Toplanan bu çapraz numaraları arayüzde Tailwind CSS kullanarak şık etiketler (badge) halinde diz. Ekranda net bir kırılım yarat: 'Orijinal Kodlar: 7701208122, 410601241R' ve 'Yan Sanayi Muadiller: TRW GDB1552, AYD 11-60091AA'. Kullanıcı hangi kodu aratırsa aratsın bu geniş eşdeğer havuzunu tek bakışta görebilsin.
