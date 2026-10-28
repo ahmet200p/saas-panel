@@ -1,7 +1,7 @@
-"Projeyi genel 'SaaS' isminden çıkarıp kendi markamız olan 'AFS Systems' adına geçiriyoruz. Lütfen HTML sayfalarındaki (login.html, admin.html, bayi.html, store.html vb.) sadece görünür UI metinlerinde ve <title> etiketlerinde bulunan 'SaaS' veya 'SaaS Platform' ifadelerini 'AFS Systems' olarak değiştir.
+"Yeni Ürün Ekleme formundaki 'Sorgula' (Parts Catalog Entegre) butonunun çalışma mantığında iki temel hata var. Muadil/Referans kodu girildiğinde (örn: 'trw gdb1552') API boş yanıt dönüyor ancak arayüz bu boş yanıtı işleyemeyip ekrana alakasız varsayılan görseller (Oil sump vb.) basıyor. Lütfen şu adımları uygulayarak arama fonksiyonunu düzelt:
 
-Giriş sayfasının footer kısmındaki 'Güvenli SaaS Oturum Yönetimi © 2026' yazısını 'AFS Systems © 2026' olarak güncelle.
+State Temizliği: 'Sorgula' butonuna tıklandığı anda (fetch işlemi başlamadan hemen önce) arayüzdeki mevcut görsel dizisini (array) ve önceki arama sonuçlarını tamamen sıfırla ([] veya null yap).
 
-Tüm sayfaların <title> etiketlerini 'AFS Systems - Bayi Paneli', 'AFS Systems - B2B Vitrin' formatına uygun olarak düzelt.
+Empty State (Boş Yanıt) Yönetimi: Eğer API'den gelen yanıt boşsa (length === 0), null ise veya hata (404 vb.) dönerse; ekrana kesinlikle rastgele (fallback) veya test amaçlı görsel basma. Bunun yerine görsel alanında 'Bu referans/OE koduyla eşleşen teknik şema bulunamadı.' şeklinde temiz bir uyarı metni göster.
 
-Login sayfasındaki 'TEST GİRİŞ BİLGİLERİ' (admin@sistem.com vb.) içeren bilgi kutusunu canlı ortama geçiş yaptığımız için HTML'den tamamen kaldır.
+Akıllı Çapraz Arama (Cross-Reference Fallback): Eğer backend tarafında bir 'Çapraz Eşleştirme' (cross-reference) endpoint'imiz varsa; girilen koddan doğrudan şema bulunamadığında isteği sonlandırma. Önce girilen kodu (örn: trw gdb1552) çapraz eşleştirme servisine göndererek asıl OE numarasını (örn: 410601241R) bul, ardından bu yeni OE numarası ile şema görsellerini otomatik olarak tekrar sorgula."
