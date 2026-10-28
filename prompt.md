@@ -1,7 +1,9 @@
-"Yeni Ürün Ekleme formundaki 'Sorgula' (Parts Catalog Entegre) butonunun çalışma mantığında iki temel hata var. Muadil/Referans kodu girildiğinde (örn: 'trw gdb1552') API boş yanıt dönüyor ancak arayüz bu boş yanıtı işleyemeyip ekrana alakasız varsayılan görseller (Oil sump vb.) basıyor. Lütfen şu adımları uygulayarak arama fonksiyonunu düzelt:
+Yeni Ürün Ekle sayfasındaki OE numarası sorgulamasında, metin verileri (uyumlu araçlar, muadiller) API'den doğru şekilde eşleşip gelirken, 'Katalog Görselleri & Teknik Şemalar' alanında aranan parçadan bağımsız olarak sürekli sabit test görselleri (Oil sump, Valve timing, Oil filter) render ediliyor. Lütfen görsel galerisinin kod bloğunu şu şekilde düzelt:
 
-State Temizliği: 'Sorgula' butonuna tıklandığı anda (fetch işlemi başlamadan hemen önce) arayüzdeki mevcut görsel dizisini (array) ve önceki arama sonuçlarını tamamen sıfırla ([] veya null yap).
+Kodun içinde Oil sump, Valve timing gibi isimlerle tanımlanmış statik (hardcoded) test görsel dizisini (array) ve fallback objelerini tamamen sil.
 
-Empty State (Boş Yanıt) Yönetimi: Eğer API'den gelen yanıt boşsa (length === 0), null ise veya hata (404 vb.) dönerse; ekrana kesinlikle rastgele (fallback) veya test amaçlı görsel basma. Bunun yerine görsel alanında 'Bu referans/OE koduyla eşleşen teknik şema bulunamadı.' şeklinde temiz bir uyarı metni göster.
+Galeri arayüzünü SADECE arama API'sinin yanıtındaki images veya schemas verisiyle (dinamik olarak) eşleştir.
 
-Akıllı Çapraz Arama (Cross-Reference Fallback): Eğer backend tarafında bir 'Çapraz Eşleştirme' (cross-reference) endpoint'imiz varsa; girilen koddan doğrudan şema bulunamadığında isteği sonlandırma. Önce girilen kodu (örn: trw gdb1552) çapraz eşleştirme servisine göndererek asıl OE numarasını (örn: 410601241R) bul, ardından bu yeni OE numarası ile şema görsellerini otomatik olarak tekrar sorgula."
+API başarılı çalışsa bile o parçaya ait bir çizim/şema veritabanında yoksa (görsel array'i boş dönüyorsa), ekrana alakasız parçalar basma; bunun yerine 'Bu parça için teknik şema bulunmamaktadır.' uyarısı göster.
+
+Şema bulunsun veya bulunmasın, kullanıcının kendi fotoğrafını ekleyebildiği 'Manuel Görsel Yükle' alanını her zaman aktif bırak.

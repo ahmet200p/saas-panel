@@ -3212,6 +3212,19 @@
       // =========================================================================
       let currentCatalogImages = [];
 
+      function ensureManualUploadActive() {
+        const dropzoneEl = document.getElementById('image-dropzone');
+        const fileInputEl = document.getElementById('prod-images');
+        if (fileInputEl) {
+          fileInputEl.disabled = false;
+        }
+        if (dropzoneEl) {
+          dropzoneEl.style.display = 'block';
+          dropzoneEl.style.pointerEvents = 'auto';
+          dropzoneEl.style.opacity = '1';
+        }
+      }
+
       function clearCatalogGallery() {
         currentCatalogImages = [];
         const galleryGrid = document.getElementById('catalog-gallery-grid');
@@ -3224,9 +3237,10 @@
           galleryBadge.style.background = '#e0f2fe';
           galleryBadge.style.color = '#0284c7';
         }
+        ensureManualUploadActive();
       }
 
-      function renderCatalogEmptyState(message = 'Bu referans/OE koduyla eşleşen teknik şema bulunamadı.') {
+      function renderCatalogEmptyState(message = 'Bu parça için teknik şema bulunmamaktadır.') {
         currentCatalogImages = [];
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
@@ -3254,17 +3268,20 @@
                 <span>${escapeHtml(message)}</span>
               </div>
               <div style="font-size: 0.72rem; color: #7f1d1d; opacity: 0.9;">
-                Kataloğumuzda bu referans/OE koduna ait OEM çizimi bulunmamaktadır. İsteğe bağlı olarak aşağıdan deponuzdaki parça fotoğrafını yükleyebilirsiniz.
+                İsteğe bağlı olarak aşağıdan 'Manuel Görsel Yükle' alanını kullanarak kendi fotoğrafınızı yükleyebilirsiniz.
               </div>
             </div>
           `;
         }
+
+        ensureManualUploadActive();
       }
 
       function renderCatalogGallery(newItems, replace = true) {
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
         const galleryBadge = document.getElementById('catalog-gallery-badge');
+        ensureManualUploadActive();
         if (!galleryGrid) return;
 
         if (replace) {
@@ -3274,21 +3291,21 @@
 
         if (!newItems || !Array.isArray(newItems) || newItems.length === 0) {
           if (currentCatalogImages.length === 0) {
-            renderCatalogEmptyState('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.');
+            renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
           }
           return;
         }
 
         newItems.forEach(item => {
-          const url = typeof item === 'string' ? item : item.url;
+          const url = typeof item === 'string' ? item : (item && (item.url || item.imageUrl || item.schemaUrl));
           if (!url) return;
-          if (!currentCatalogImages.some(x => (typeof x === 'string' ? x : x.url) === url)) {
+          if (!currentCatalogImages.some(x => (typeof x === 'string' ? x : (x.url || x.imageUrl || x.schemaUrl)) === url)) {
             currentCatalogImages.push(item);
           }
         });
 
         if (currentCatalogImages.length === 0) {
-          renderCatalogEmptyState('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.');
+          renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
           return;
         }
 
@@ -3301,7 +3318,7 @@
 
         galleryGrid.innerHTML = '';
         currentCatalogImages.forEach((item, idx) => {
-          let rawUrl = typeof item === 'string' ? item : item.url;
+          let rawUrl = typeof item === 'string' ? item : (item && (item.url || item.imageUrl || item.schemaUrl));
           if (!rawUrl) return;
 
           let url = rawUrl;
@@ -3309,7 +3326,7 @@
             url = 'https:' + url;
           }
 
-          const title = typeof item === 'object' && item.name ? item.name : `OEM Montaj Şeması #${idx + 1}`;
+          const title = typeof item === 'object' && (item.name || item.title) ? (item.name || item.title) : `Teknik Şema #${idx + 1}`;
 
           const card = document.createElement('div');
           card.className = 'catalog-img-card active';
@@ -3527,12 +3544,11 @@
 
       /**
        * resolveCrossReferenceOe:
-       * Girilen muadil / aftermarket referans kodunun (örn: TRW GDB1552) asıl OE numarasını
+       * Girilen muadil / aftermarket referans kodunun asıl OE numarasını
        * bulmak için backend proxy çapraz eşleştirme servisine danışır.
        */
       async function resolveCrossReferenceOe(queryCode) {
         if (!queryCode) return null;
-        const normalized = queryCode.trim().toUpperCase().replace(/[\s\-_.]+/g, '');
 
         // 1. Backend Proxy Çapraz Eşleştirme servisini sorgula (/catalog/cross-reference)
         try {
@@ -3554,38 +3570,6 @@
           }
         } catch (e) {}
 
-        // 3. Otomotiv Çapraz Referans Eşleştirme Dizini (TecDoc / OEM Endüstri Standartları)
-        const LOCAL_CROSS_INDEX = {
-          'TRWGDB1552': '410601241R',
-          'GDB1552': '410601241R',
-          'TRWGDB241R': '410601241R',
-          'GDB241R': '410601241R',
-          '098642441R': '410601241R',
-          'P6841R': '410601241R',
-          'FDB241R': '410601241R',
-          '59841R': '410601241R',
-          'BOSCH0986424797': '1K0698151',
-          '0986424797': '1K0698151',
-          'BREMBOP85075': '1K0698151',
-          'P85075': '1K0698151',
-          'FERODOFDB4394': '1K0698151',
-          'FDB4394': '1K0698151',
-          'MANNW71294': '03L115562',
-          'W71294': '03L115562',
-          'MAHLEOX388D': '03L115562',
-          'OX388D': '03L115562'
-        };
-
-        if (LOCAL_CROSS_INDEX[normalized]) {
-          return LOCAL_CROSS_INDEX[normalized];
-        }
-
-        for (const [key, oe] of Object.entries(LOCAL_CROSS_INDEX)) {
-          if (normalized.includes(key) || key.includes(normalized)) {
-            return oe;
-          }
-        }
-
         return null;
       }
 
@@ -3603,9 +3587,11 @@
         // 1. STATE TEMİZLİĞİ: 'Sorgula' butonuna tıklandığı anda (fetch işlemi
         // başlamadan hemen önce) arayüzdeki mevcut görsel dizisi (array) ve önceki
         // arama sonuçları tamamen sıfırlanır ([] veya null yapılır).
+        // Manuel Görsel Yükle alanı her zaman aktif tutulur.
         // =========================================================================
         currentCatalogImages = [];
         window.currentEnrichedData = null;
+        ensureManualUploadActive();
 
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
@@ -3678,28 +3664,24 @@
 
           const data = (json && json.success && json.data) ? json.data : null;
 
+          // Galeri arayüzü SADECE arama API'sinin yanıtından dönen images veya schemas verisiyle dinamik olarak eşleştirilir
+          const schemas = (data && Array.isArray(data.schemas)) ? data.schemas : [];
           const images = (data && Array.isArray(data.images)) ? data.images : [];
-          const diagrams = (data && Array.isArray(data.diagrams)) ? data.diagrams : [];
-          const allItems = [...diagrams, ...images.filter(img => !diagrams.some(d => (typeof d === 'string' ? d : d.url) === (typeof img === 'string' ? img : img.url)))];
+          const allItems = schemas.length > 0
+            ? [...schemas, ...images.filter(img => !schemas.some(s => (typeof s === 'string' ? s : (s && s.url)) === (typeof img === 'string' ? img : (img && img.url))))]
+            : images;
 
           // =========================================================================
-          // 3. AKILLI ÇAPRAZ ARAMA (CROSS-REFERENCE FALLBACK):
+          // 3. AKILLI ÇAPRAZ ARAMA (CROSS-REFERENCE):
           // Eğer doğrudan girilen koddan teknik şema bulunamadıysa (allItems.length === 0)
-          // ve henüz çapraz sorgu yapılmadıysa (!isCrossFallback); isteği sonlandırma!
-          // Önce girilen kodu çapraz eşleştirme servisine göndererek asıl OE numarasını bul,
-          // ardından bu yeni OE numarası ile şema görsellerini otomatik olarak tekrar sorgula.
+          // ve henüz çapraz sorgu yapılmadıysa (!isCrossFallback), backend çapraz eşleştirme
+          // servisine danışarak asıl OE numarasını kontrol et.
           // =========================================================================
           if (allItems.length === 0 && !isCrossFallback) {
-            console.info(`[CATALOG] "${rawOe}" için doğrudan teknik şema bulunamadı. Akıllı Çapraz Eşleştirme servisi devreye giriyor...`);
-
             const matchedOe = await resolveCrossReferenceOe(rawOe);
             if (matchedOe && matchedOe.toUpperCase() !== rawOe.toUpperCase()) {
               showToast(`Muadil referans (${rawOe}) çözümlendi ➔ Asıl OE: ${matchedOe}. Şemalar otomatik sorgulanıyor...`, 'info');
-
-              // Arayüzdeki OE inputunu bulunan asıl OE numarasıyla güncelle
               inputProdOe.value = matchedOe;
-
-              // Yeni OE numarası ile şemaları otomatik tekrar sorgula
               return handleOeSearch(true, rawOe);
             }
           }
@@ -3760,20 +3742,19 @@
 
             // =====================================================================
             // 2. EMPTY STATE (BOŞ YANIT) YÖNETİMİ:
-            // Eğer API'den gelen yanıt boşsa (length === 0), null ise veya hata dönerse;
-            // Ekrana KESİNLİKLE rastgele (fallback) veya test amaçlı görsel basma!
-            // Bunun yerine görsel alanında 'Bu referans/OE koduyla eşleşen teknik şema bulunamadı.'
-            // şeklinde temiz bir uyarı metni göster.
+            // Eğer API başarılı dönse bile, veritabanında o parçaya ait bir çizim/şema
+            // yoksa (görsel dizisi boş dönerse), ekrana alakasız parçalar basmak yerine
+            // 'Bu parça için teknik şema bulunmamaktadır.' uyarısı gösterilir.
             // =====================================================================
             if (allItems.length > 0) {
               renderCatalogGallery(allItems, true);
               const successMsg = isCrossFallback && originalRefCode
                 ? `Asıl OE (${rawOe}) şemaları başarıyla getirildi! (Muadil: ${originalRefCode})`
-                : (json.message || 'Parça OE bilgileri ve OEM teknik şemaları başarıyla getirildi!');
+                : (json.message || 'Parça OE bilgileri ve teknik şemaları başarıyla getirildi!');
               showToast(successMsg, 'success');
             } else {
-              renderCatalogEmptyState('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.');
-              showToast('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.', 'warning');
+              renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
+              showToast('Bu parça için teknik şema bulunmamaktadır.', 'warning');
             }
 
             // 6. Zengin Verileri Sakla ve Arayüzde Önizle
@@ -3785,15 +3766,16 @@
             // KRİTİK KURAL: Fiyat ve Stok inputlarına ASLA DOKUNULMAZ!
 
           } else {
-            renderCatalogEmptyState('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.');
-            const msg = (json && json.message) || `"${rawOe}" referans/OE koduna ait parça katalogda bulunamadı.`;
+            renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
+            const msg = (json && json.message) || 'Bu parça için teknik şema bulunmamaktadır.';
             showToast(msg, 'warning');
           }
         } catch (err) {
           console.error('[OE_SEARCH_ERROR]:', err);
-          renderCatalogEmptyState('Bu referans/OE koduyla eşleşen teknik şema bulunamadı.');
+          renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
           showToast('OE sorgusu gerçekleştirilirken bağlantı hatası oluştu.', 'warning');
         } finally {
+          ensureManualUploadActive();
           if (btnSearchOe) {
             btnSearchOe.disabled = false;
             btnSearchOe.style.opacity = '1';

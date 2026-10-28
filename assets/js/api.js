@@ -1879,94 +1879,25 @@
       };
     }
 
-    // 10b. GET /catalog/search-oe/:oeNumber (Backend Proxy OE Sorgulama Mock)
+    // 10b. GET /catalog/search-oe/:oeNumber (Backend Proxy OE Sorgulama)
     if (cleanEndpoint.startsWith('/catalog/search-oe/') && method === 'GET') {
       const parts = cleanEndpoint.split('/');
       const rawOe = decodeURIComponent(parts[parts.length - 1] || '').trim().toUpperCase();
 
-      if (rawOe === '410601241R') {
-        return {
-          success: true,
-          message: 'Parça OE bilgileri ve OEM teknik şemaları başarıyla getirildi.',
-          data: {
-            oeNumber: '410601241R',
-            brand: 'Renault',
-            vehicleBrand: 'Renault',
-            partName: 'Renault Ön Fren Balatası Takımı',
-            category: 'Fren Sistemi',
-            partGroup: 'Fren Sistemi',
-            compatibleModels: 'Renault Clio IV (BH/KH), Renault Megane III (BZ0/1), Renault Captur I (J5/H5), Dacia Duster (HS/HM)',
-            diagrams: [
-              {
-                id: 'RN-410601241R-01',
-                url: 'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01084111.png',
-                name: 'Ön Aks & Fren Kaliperi Montaj Şeması'
-              },
-              {
-                id: 'RN-410601241R-02',
-                url: 'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01079719.png',
-                name: 'Porya & Fren Diski Taşıyıcı Şeması'
-              },
-              {
-                id: 'RN-410601241R-03',
-                url: 'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01040693.png',
-                name: 'Fren Hidrolik ve Balata İkaz Şeması'
-              },
-              {
-                id: 'RN-410601241R-04',
-                url: 'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01057084.png',
-                name: 'Ön Taşıyıcı Salıncak & Aks Bağlantı Şeması'
-              }
-            ],
-            images: [
-              'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01084111.png',
-              'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01079719.png',
-              'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01040693.png',
-              'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01057084.png'
-            ],
-            diagramUrl: 'https://img.parts-catalogs.com/r/300x430/renault_2019_10/dessins/01084111.png',
-            crossReferences: [
-              { brand: 'TRW / Lucas', code: 'GDB1552', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-              { brand: 'Bosch', code: '0 986 424 41R', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 99 },
-              { brand: 'Brembo', code: 'P 68 41R', quality: 'Premium Performans', matchScore: 97 },
-              { brand: 'Ferodo', code: 'FDB241R', quality: 'A Kalite Muadil', matchScore: 96 },
-              { brand: 'Valeo', code: '59841R', quality: 'Fransız OEM Standardı', matchScore: 95 }
-            ],
-            compatibleVehicles: [
-              { make: 'Renault', model: 'Clio IV (BH/KH)', years: '2012 - 2020', engine: '1.5 dCi 75/90 HP (K9K)' },
-              { make: 'Renault', model: 'Megane III (BZ0/1)', years: '2008 - 2016', engine: '1.5 dCi 110 HP (K9K 836/837)' },
-              { make: 'Renault', model: 'Captur I (J5/H5)', years: '2013 - 2019', engine: '1.5 dCi 90 HP' },
-              { make: 'Dacia', model: 'Duster (HS/HM)', years: '2010 - 2023', engine: '1.5 dCi 4x2 / 4x4 (K9K 858)' },
-              { make: 'Dacia', model: 'Sandero II / Stepway', years: '2012 - 2021', engine: '1.5 dCi 90 HP (K9K)' }
-            ],
-            attributes: [
-              { name: 'Montaj Tarafı', value: 'Ön Aks (Sağ ve Sol Takım)' },
-              { name: 'Fren Sistemi', value: 'Lucas / TRW Tip Kaliper Sistemi' },
-              { name: 'Genişlik / Uzunluk', value: '137.0 mm' },
-              { name: 'Kalınlık', value: '18.5 mm' },
-              { name: 'Sürtünme Katsayısı', value: 'ECE R90 Homologasyon Onaylı' }
-            ]
-          }
-        };
-      }
-
-      // Şeması olmayan veya genel parça kodları için boş dizi dönülür (KESİNLİKLE rastgele görsel basılmaz)
+      // Şeması olmayan parçalar için boş dizi dönülür (sabit/fallback test görseli basılmaz)
       return {
         success: true,
-        message: 'OE parça bilgisi backend proxy üzerinden başarıyla getirildi.',
+        message: 'OE parça bilgisi getirildi.',
         data: {
           oeNumber: rawOe,
-          partName: `Orijinal Parça (${rawOe})`,
-          category: 'Genel Mekanik',
-          partGroup: 'Motor & Mekanik',
+          partName: '',
+          category: '',
+          partGroup: '',
           vehicleBrand: '',
           compatibleModels: '',
-          diagrams: [],
+          schemas: [],
           images: [],
-          diagramUrl: null,
-          crossReferences: [
-            { brand: 'TRW / Lucas', code: 'GDB1552', quality: 'Muadil Referans' }
-          ],
+          crossReferences: [],
           compatibleVehicles: [],
           attributes: []
         }
@@ -1975,43 +1906,6 @@
 
     // 10c. GET /catalog/cross-reference/:code & GET /catalog/cross-match/:code
     if ((cleanEndpoint.startsWith('/catalog/cross-reference/') || cleanEndpoint.startsWith('/catalog/cross-match/')) && method === 'GET') {
-      const parts = cleanEndpoint.split('/');
-      const rawCode = decodeURIComponent(parts[parts.length - 1] || '').trim().toUpperCase();
-      const norm = rawCode.replace(/[\s\-_.]+/g, '');
-
-      let matchedOe = null;
-      let matchedBrand = 'Renault';
-      let partName = 'Ön Fren Balatası Takımı';
-
-      if (norm.includes('GDB1552') || norm === 'TRWGDB1552' || norm === 'GDB241R' || norm.includes('41R')) {
-        matchedOe = '410601241R';
-        matchedBrand = 'Renault';
-        partName = 'Ön Fren Balatası Takımı';
-      } else if (norm.includes('0986424797') || norm.includes('P85075') || norm.includes('FDB4394')) {
-        matchedOe = '1K0698151';
-        matchedBrand = 'Volkswagen';
-        partName = 'Ön Fren Balatası Seti';
-      } else if (norm.includes('W71294') || norm.includes('OX388D')) {
-        matchedOe = '03L115562';
-        matchedBrand = 'Volkswagen';
-        partName = 'Yağ Filtresi Elemanı';
-      }
-
-      if (matchedOe) {
-        return {
-          success: true,
-          message: 'Çapraz referans (Cross-Reference) başarıyla çözümlendi.',
-          data: {
-            queryCode: rawCode,
-            oeNumber: matchedOe,
-            primaryOe: matchedOe,
-            brand: matchedBrand,
-            partName: partName,
-            matchScore: 99
-          }
-        };
-      }
-
       return {
         success: false,
         status: 404,
@@ -2238,6 +2132,42 @@
         localStorage.removeItem('user');
         window.location.href = 'login.html';
         return null;
+      }
+
+      if (url.includes('/catalog/search-oe/') && data && data.data && typeof data.data === 'object') {
+        const d = data.data;
+        const pName = String(d.partName || '').toLowerCase();
+        const pGroup = String(d.partGroup || d.category || '').toLowerCase();
+        const isGenericFallbackPart =
+          pGroup === 'genel mekanik' ||
+          pName.includes('orijinal parça (') ||
+          pName.includes('orijinal yedek parça (');
+
+        if (isGenericFallbackPart) {
+          d.schemas = [];
+          d.images = [];
+          d.diagrams = [];
+          d.diagramUrl = null;
+        } else if (!Array.isArray(d.schemas) && Array.isArray(d.diagrams)) {
+          const matchedSchemas = d.diagrams.filter(item => {
+            if (!item || !item.url) return false;
+            const itemName = String(item.name || item.title || '').toLowerCase();
+            if (pName.includes('fren') || pGroup.includes('fren')) {
+              return /brake|fren|caliper|kaliper|disk|disc|drum|kampana|porya|hub/i.test(itemName);
+            }
+            if (pName.includes('radyatör') || pName.includes('su ') || pName.includes('soğutma')) {
+              return /radiator|radyat|coolant|soğutma|water|su pompa/i.test(itemName);
+            }
+            if (pName.includes('filtre') || pGroup.includes('filtre')) {
+              return /filter|filtre/i.test(itemName);
+            }
+            return true;
+          });
+          d.schemas = matchedSchemas;
+          d.images = matchedSchemas.map(s => s.url);
+          d.diagrams = matchedSchemas;
+          d.diagramUrl = matchedSchemas.length > 0 ? matchedSchemas[0].url : null;
+        }
       }
 
       if (data && typeof data === 'object') {
