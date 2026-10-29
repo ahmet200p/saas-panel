@@ -1883,86 +1883,19 @@
     if (cleanEndpoint.startsWith('/catalog/search-oe/') && method === 'GET') {
       const parts = cleanEndpoint.split('/');
       const rawOe = decodeURIComponent(parts[parts.length - 1] || '').trim().toUpperCase();
-      const deepMatch = findDeepCrossReferenceTree(rawOe);
 
-      if (deepMatch) {
-        const t = deepMatch.tree;
-        return {
-          success: true,
-          message: 'OE parça ve derin çapraz referans havuzu getirildi.',
-          data: {
-            oeNumber: rawOe,
-            primaryOe: t.primaryOe,
-            isAftermarketQuery: deepMatch.isAftermarketQuery,
-            partName: t.partName,
-            category: t.partGroup,
-            partGroup: t.partGroup,
-            vehicleBrand: t.brand,
-            compatibleModels: t.compatibleModels,
-            schemas: [],
-            images: [],
-            originalCodes: [...t.originalCodes],
-            equivalentOEs: [...t.originalCodes],
-            aftermarketCodes: [...t.aftermarketCodes],
-            crossReferences: [...t.aftermarketCodes],
-            compatibleVehicles: [],
-            attributes: []
-          }
-        };
-      }
-
-      // Şeması olmayan parçalar için boş dizi dönülür (sabit/fallback test görseli basılmaz)
       return {
         success: true,
-        message: 'OE parça bilgisi getirildi.',
-        data: {
-          oeNumber: rawOe,
-          partName: '',
-          category: '',
-          partGroup: '',
-          vehicleBrand: '',
-          compatibleModels: '',
-          schemas: [],
-          images: [],
-          originalCodes: [rawOe],
-          equivalentOEs: [],
-          aftermarketCodes: [],
-          crossReferences: [],
-          compatibleVehicles: [],
-          attributes: []
-        }
+        searchedQuery: rawOe,
+        originalOEMs: [],
+        referenceCodes: [],
+        technicalSpecs: {},
+        images: []
       };
     }
 
     // 10c. GET /catalog/cross-reference/:code & GET /catalog/cross-match/:code
     if ((cleanEndpoint.startsWith('/catalog/cross-reference/') || cleanEndpoint.startsWith('/catalog/cross-match/')) && method === 'GET') {
-      const parts = cleanEndpoint.split('/');
-      const rawCode = decodeURIComponent(parts[parts.length - 1] || '').trim();
-      const deepMatch = findDeepCrossReferenceTree(rawCode);
-
-      if (deepMatch) {
-        const t = deepMatch.tree;
-        return {
-          success: true,
-          message: 'Derin çapraz referans (Deep Cross-Match) ağacı başarıyla çözümlendi.',
-          data: {
-            queryCode: rawCode,
-            isAftermarketQuery: deepMatch.isAftermarketQuery,
-            matchedCode: deepMatch.matchedCode,
-            primaryOe: t.primaryOe,
-            oeNumber: t.primaryOe,
-            brand: t.brand,
-            partName: t.partName,
-            partGroup: t.partGroup,
-            compatibleModels: t.compatibleModels,
-            originalCodes: [...t.originalCodes],
-            equivalentOEs: [...t.originalCodes],
-            aftermarketCodes: [...t.aftermarketCodes],
-            crossReferences: [...t.aftermarketCodes]
-          }
-        };
-      }
-
       return {
         success: false,
         status: 404,
@@ -1976,125 +1909,6 @@
       message: 'İşlem başarılı.',
       data: {}
     };
-  }
-
-  // ============================================================================
-  // DERİN ÇAPRAZ REFERANS AĞACI (DEEP CROSS-REFERENCE ENGINE)
-  // OE Numaraları, OE Revizyonları ve Yan Sanayi (Aftermarket) Kardeş Muadilleri
-  // ============================================================================
-  const DEEP_CROSS_REFERENCE_TREES = [
-    {
-      primaryOe: '410601241R',
-      brand: 'Renault',
-      partName: 'Renault Ön Fren Balata Takımı',
-      partGroup: 'Fren Sistemi',
-      compatibleModels: 'Renault Clio IV (BH/KH), Renault Megane III (BZ0/1), Renault Captur I (J5/H5), Dacia Duster (HS/HM), Dacia Sandero II / Stepway',
-      originalCodes: ['7701208122', '410601241R', '7701208422', '7701209164', '8671016692', '410602192R'],
-      aftermarketCodes: [
-        { brand: 'TRW', code: 'GDB1552', fullCode: 'TRW GDB1552', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-        { brand: 'AYD', code: '11-60091AA', fullCode: 'AYD 11-60091AA', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 98 },
-        { brand: 'Bosch', code: '0 986 424 41R', fullCode: 'Bosch 0 986 424 41R', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 99 },
-        { brand: 'Valeo', code: '59841R', fullCode: 'Valeo 59841R', type: 'Yan Sanayi Muadil', quality: 'Fransız OEM Standardı', matchScore: 97 },
-        { brand: 'Brembo', code: 'P 68 41R', fullCode: 'Brembo P 68 41R', type: 'Yan Sanayi Muadil', quality: 'Premium Performans', matchScore: 97 },
-        { brand: 'Ferodo', code: 'FDB241R', fullCode: 'Ferodo FDB241R', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 96 },
-        { brand: 'TRW', code: 'GDB241R', fullCode: 'TRW GDB241R', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 98 }
-      ]
-    },
-    {
-      primaryOe: '1K0698151',
-      brand: 'Volkswagen',
-      partName: 'Volkswagen Ön Fren Balata Takımı',
-      partGroup: 'Fren Sistemi',
-      compatibleModels: 'VW Golf V / VI, Jetta, Passat (3C), Caddy III, Audi A3 (8P), Seat Leon, Skoda Octavia II',
-      originalCodes: ['1K0698151', '1K0698151A', '1K0698151F', 'JZW698151'],
-      aftermarketCodes: [
-        { brand: 'TRW', code: 'GDB1550', fullCode: 'TRW GDB1550', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-        { brand: 'AYD', code: '11-60045', fullCode: 'AYD 11-60045', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 98 },
-        { brand: 'Bosch', code: '0 986 424 797', fullCode: 'Bosch 0 986 424 797', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 99 },
-        { brand: 'Brembo', code: 'P 85 075', fullCode: 'Brembo P 85 075', type: 'Yan Sanayi Muadil', quality: 'Premium Performans', matchScore: 98 },
-        { brand: 'Ferodo', code: 'FDB4394', fullCode: 'Ferodo FDB4394', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 96 },
-        { brand: 'Valeo', code: '598641', fullCode: 'Valeo 598641', type: 'Yan Sanayi Muadil', quality: 'OEM Standardı', matchScore: 96 }
-      ]
-    },
-    {
-      primaryOe: '8200242848',
-      brand: 'Renault',
-      partName: 'Renault 1.5 dCi K9K Yağ Filtresi',
-      partGroup: 'Filtre & Bakım',
-      compatibleModels: 'Renault Clio III / IV, Megane II / III, Fluence, Captur, Dacia Duster, Sandero, Logan',
-      originalCodes: ['8200242848', '8200768913', '8200867976', '1520800Q0F'],
-      aftermarketCodes: [
-        { brand: 'Mann-Filter', code: 'W 75/3', fullCode: 'Mann-Filter W 75/3', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-        { brand: 'Mahle', code: 'OC 467', fullCode: 'Mahle OC 467', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 98 },
-        { brand: 'Bosch', code: '0 451 103 336', fullCode: 'Bosch 0 451 103 336', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 98 },
-        { brand: 'Valeo', code: '586002', fullCode: 'Valeo 586002', type: 'Yan Sanayi Muadil', quality: 'Fransız OEM Standardı', matchScore: 96 },
-        { brand: 'Filtron', code: 'OP 643/3', fullCode: 'Filtron OP 643/3', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 95 }
-      ]
-    },
-    {
-      primaryOe: '03L115562',
-      brand: 'Volkswagen',
-      partName: 'VAG 1.6 / 2.0 TDI Yağ Filtresi Elemanı',
-      partGroup: 'Filtre & Bakım',
-      compatibleModels: 'VW Golf VI / VII, Passat B7, Jetta IV, Polo 6R, Caddy, Audi A3 / A4, Skoda Octavia, Seat Leon',
-      originalCodes: ['03L115562', '03L115466', '03N115562'],
-      aftermarketCodes: [
-        { brand: 'Mann-Filter', code: 'W71294', fullCode: 'Mann-Filter W71294', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-        { brand: 'Mahle', code: 'OX388D', fullCode: 'Mahle OX388D', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 99 },
-        { brand: 'Bosch', code: 'F 026 407 079', fullCode: 'Bosch F 026 407 079', type: 'Yan Sanayi Muadil', quality: 'Orijinal Kalite (OEM/OES)', matchScore: 98 },
-        { brand: 'Febi Bilstein', code: '32542', fullCode: 'Febi Bilstein 32542', type: 'Yan Sanayi Muadil', quality: 'A Kalite Muadil', matchScore: 96 }
-      ]
-    },
-    {
-      primaryOe: '7701049263',
-      brand: 'Renault',
-      partName: 'Renault Clio / Megane Su Radyatörü',
-      partGroup: 'Motor & Mekanik',
-      compatibleModels: 'Renault Clio II, Symbol, Thalia, Megane I, Kangoo',
-      originalCodes: ['7701049263', '8200148169', '7701054873'],
-      aftermarketCodes: [
-        { brand: 'Valeo', code: '732842', fullCode: 'Valeo 732842', type: 'Yan Sanayi Muadil', quality: 'Orijinal Ekipman (OEM)', matchScore: 99 },
-        { brand: 'Nissens', code: '63975A', fullCode: 'Nissens 63975A', type: 'Yan Sanayi Muadil', quality: 'Premium Performans', matchScore: 98 },
-        { brand: 'Kale', code: '346200', fullCode: 'Kale 346200', type: 'Yan Sanayi Muadil', quality: 'Yerli OEM Kalitesi', matchScore: 97 }
-      ]
-    }
-  ];
-
-  function normalizeCatalogCode(str) {
-    return String(str || '').trim().toUpperCase().replace(/[\s\-_.\/]+/g, '');
-  }
-
-  function findDeepCrossReferenceTree(rawQuery) {
-    const norm = normalizeCatalogCode(rawQuery);
-    if (!norm) return null;
-
-    for (const tree of DEEP_CROSS_REFERENCE_TREES) {
-      // 1. Orijinal (OE) kodlarda ara
-      for (const oe of tree.originalCodes) {
-        if (normalizeCatalogCode(oe) === norm) {
-          return { tree, isAftermarketQuery: false, matchedCode: oe };
-        }
-      }
-      // 2. Yan sanayi (Aftermarket) kodlarında ara (hem "GDB1552" hem "TRW GDB1552" desteklenir)
-      for (const am of tree.aftermarketCodes) {
-        const normCode = normalizeCatalogCode(am.code);
-        const normFull = normalizeCatalogCode(am.fullCode || `${am.brand} ${am.code}`);
-        const normBrand = normalizeCatalogCode(am.brand);
-        if (
-          norm === normCode ||
-          norm === normFull ||
-          (normCode.length >= 5 && norm.endsWith(normCode) && (!normBrand || norm.includes(normBrand)))
-        ) {
-          return { tree, isAftermarketQuery: true, matchedCode: am.fullCode || `${am.brand} ${am.code}` };
-        }
-      }
-    }
-    return null;
-  }
-
-  if (typeof window !== 'undefined') {
-    window.findDeepCrossReferenceTree = findDeepCrossReferenceTree;
-    window.normalizeCatalogCode = normalizeCatalogCode;
   }
 
   /**
@@ -2310,84 +2124,7 @@
         return null;
       }
 
-      if (url.includes('/catalog/search-oe/') && data && data.data && typeof data.data === 'object') {
-        const d = data.data;
-        const rawQueryFromUrl = decodeURIComponent((url.split('/catalog/search-oe/')[1] || '').split('?')[0]).trim();
-        const queryTarget = d.oeNumber || rawQueryFromUrl;
-        const pName = String(d.partName || '').toLowerCase();
-        const pGroup = String(d.partGroup || d.category || '').toLowerCase();
-        const isGenericFallbackPart =
-          pGroup === 'genel mekanik' ||
-          pName.includes('orijinal parça (') ||
-          pName.includes('orijinal yedek parça (');
-
-        // Çift Yönlü Derin Sorgu (Deep Cross-Match) Ağacı Çözümlemesi
-        const deepMatch = findDeepCrossReferenceTree(queryTarget);
-        if (deepMatch) {
-          const t = deepMatch.tree;
-          d.primaryOe = t.primaryOe;
-          d.isAftermarketQuery = deepMatch.isAftermarketQuery;
-          if (deepMatch.matchedAftermarket) {
-            d.searchedAftermarket = deepMatch.matchedAftermarket;
-          }
-          d.originalCodes = [...t.originalCodes];
-          d.equivalentOEs = [...t.originalCodes];
-          d.aftermarketCodes = [...t.aftermarketCodes];
-          d.crossReferences = [...t.aftermarketCodes];
-
-          if (isGenericFallbackPart) {
-            d.partName = t.partName;
-            d.partGroup = t.partGroup;
-            d.category = t.partGroup;
-            d.vehicleBrand = t.brand;
-            d.compatibleModels = t.compatibleModels;
-            d.compatibility = t.compatibleModels;
-            d.oemDimensions = t.oemDimensions;
-            d.technicalNotes = t.technicalNotes;
-          }
-        } else {
-          // Derin ağaçta olmayan parçalar için mevcut OE ve yan sanayi verilerini normalize et
-          const origSet = new Set();
-          if (d.oeNumber) origSet.add(String(d.oeNumber).trim().toUpperCase());
-          if (Array.isArray(d.equivalentOEs)) {
-            d.equivalentOEs.forEach(code => {
-              if (code) origSet.add(String(code).trim().toUpperCase());
-            });
-          }
-          d.originalCodes = Array.from(origSet);
-          d.primaryOe = d.originalCodes[0] || String(d.oeNumber || '').trim().toUpperCase();
-          d.aftermarketCodes = Array.isArray(d.crossReferences) ? d.crossReferences : [];
-        }
-
-        if (isGenericFallbackPart) {
-          d.schemas = [];
-          d.images = [];
-          d.diagrams = [];
-          d.diagramUrl = null;
-        } else if (!Array.isArray(d.schemas) && Array.isArray(d.diagrams)) {
-          const effectiveName = String(d.partName || '').toLowerCase();
-          const effectiveGroup = String(d.partGroup || d.category || '').toLowerCase();
-          const matchedSchemas = d.diagrams.filter(item => {
-            if (!item || !item.url) return false;
-            const itemName = String(item.name || item.title || '').toLowerCase();
-            if (effectiveName.includes('fren') || effectiveGroup.includes('fren')) {
-              return /brake|fren|caliper|kaliper|disk|disc|drum|kampana|porya|hub/i.test(itemName);
-            }
-            if (effectiveName.includes('radyatör') || effectiveName.includes('su ') || effectiveName.includes('soğutma')) {
-              return /radiator|radyat|coolant|soğutma|water|su pompa/i.test(itemName);
-            }
-            if (effectiveName.includes('filtre') || effectiveGroup.includes('filtre')) {
-              return /filter|filtre/i.test(itemName);
-            }
-            return true;
-          });
-          d.schemas = matchedSchemas;
-          d.images = matchedSchemas.map(s => s.url);
-          d.diagrams = matchedSchemas;
-          d.diagramUrl = matchedSchemas.length > 0 ? matchedSchemas[0].url : null;
-        }
-      }
-
+      // /catalog/search-oe/ yanıtı canlı backend'den olduğu gibi (originalOEMs, referenceCodes, technicalSpecs, images) aktarılır
       if (data && typeof data === 'object') {
         data._status = response.status;
         data._ok = response.ok;

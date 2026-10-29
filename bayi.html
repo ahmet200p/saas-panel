@@ -16,50 +16,140 @@
   <!-- CSS Dosyası -->
   <link rel="stylesheet" href="tenant.css">
   <style>
-    /* Tailwind CSS Uyumlu Çapraz Referans (Cross-Reference) Badge Yardımcıları */
+    /* Tailwind CSS Uyumlu B2B Çapraz Referans, Akıllı Galeri ve Mühendislik Tablosu Stilleri */
     .tw-cross-container {
       background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
       border: 1.5px solid #cbd5e1;
       border-radius: 0.75rem;
-      padding: 0.875rem 1rem;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+      padding: 1rem;
+      margin-top: 0.625rem;
+      margin-bottom: 1.125rem;
+      box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.06);
     }
     .tw-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.375rem;
-      padding: 0.25rem 0.625rem;
-      border-radius: 0.375rem;
-      font-size: 0.75rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.45rem;
+      font-size: 0.76rem;
       line-height: 1.1rem;
-      font-weight: 600;
+      font-weight: 700;
       transition: all 0.15s ease-in-out;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
     .tw-badge-oe {
       background-color: #eff6ff;
       color: #1d4ed8;
-      border: 1px solid #bfdbfe;
+      border: 1px solid #93c5fd;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.02em;
     }
     .tw-badge-oe-active {
       background-color: #dbeafe;
-      color: #1e40af;
+      color: #1e3a8a;
       border: 1.5px solid #2563eb;
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
     }
-    .tw-badge-aftermarket {
+    .tw-ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 0.5rem;
+    }
+    .tw-ref-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.4rem 0.65rem;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid #f59e0b;
+      border-radius: 0.45rem;
+      font-size: 0.75rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all 0.15s ease;
+    }
+    .tw-ref-card-active {
       background-color: #fffbeb;
-      color: #92400e;
-      border: 1px solid #fde68a;
+      border-color: #f59e0b;
+      border-left: 3.5px solid #d97706;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.16);
     }
-    .tw-badge-aftermarket-active {
+    .tw-ref-brand {
+      font-weight: 800;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tw-ref-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      color: #b45309;
       background-color: #fef3c7;
-      color: #78350f;
-      border: 1.5px solid #d97706;
-      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.15);
+      border: 1px solid #fde68a;
+      padding: 0.125rem 0.45rem;
+      border-radius: 0.3rem;
+      white-space: nowrap;
+    }
+    .tw-fallback-badge {
+      position: absolute;
+      bottom: 30px;
+      left: 5px;
+      right: 5px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.35rem;
+      background-color: rgba(254, 243, 199, 0.96);
+      color: #92400e;
+      border: 1px solid #f59e0b;
+      font-size: 0.63rem;
+      font-weight: 700;
+      line-height: 0.85rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tw-specs-table-wrap {
+      border: 1px solid #cbd5e1;
+      border-radius: 0.6rem;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .tw-specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+    .tw-specs-table tr {
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .tw-specs-table tr:last-child {
+      border-bottom: none;
+    }
+    .tw-specs-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .tw-specs-table th {
+      width: 44%;
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-weight: 700;
+      color: #475569;
+      background-color: rgba(241, 245, 249, 0.65);
+      border-right: 1px solid #e2e8f0;
+    }
+    .tw-specs-table td {
+      padding: 0.5rem 0.75rem;
+      font-weight: 700;
+      color: #0f172a;
     }
     .inline-flex { display: inline-flex; }
     .flex { display: flex; }
@@ -867,9 +957,9 @@
             <small style="color: #64748b; font-size: 0.74rem; margin-top: 4px; display: block;">* OE sorgusu 'Parça Adı' ve 'Parça Grubu' alanlarını otomatik doldurur.</small>
           </div>
 
-          <!-- AŞAMA 2 & 3: Bu Parçayla Eşdeğer Kodlar (Cross-References) UI Bileşeni & Tailwind Badges -->
+          <!-- KURAL 2: DEVASA ÇAPRAZ REFERANS AĞI (Orijinal Ekipman OEM Numaraları & Eşdeğer Muadil Marka Referansları) -->
           <div class="form-group tw-cross-container" id="deep-cross-references-container" style="display: none;">
-            <div class="flex items-center justify-between" style="margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+            <div class="flex items-center justify-between" style="margin-bottom: 10px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">
               <div class="inline-flex items-center gap-1.5" style="font-weight: 800; color: #0f172a; font-size: 0.84rem;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="16 3 21 3 21 8"></polyline>
@@ -878,36 +968,36 @@
                   <line x1="15" y1="15" x2="21" y2="21"></line>
                   <line x1="4" y1="4" x2="9" y2="9"></line>
                 </svg>
-                <span>Bu Parçayla Eşdeğer Kodlar (Cross-References)</span>
+                <span>Derin Çapraz Referans Ağı (Deep Cross-Reference)</span>
               </div>
               <span id="deep-cross-ref-summary-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700" style="border: 1px solid #a7f3d0;">
-                Çift Yönlü Eşleşti
+                Canlı Eşleşme
               </span>
             </div>
 
-            <!-- Kırılım 1: Orijinal Kodlar -->
-            <div id="cross-ref-original-group" style="margin-bottom: 10px;">
-              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
-                <span style="font-size: 0.74rem; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.3px;">
-                  Orijinal Kodlar:
+            <!-- Kısım A - Orijinal (OEM) Kodları Havuzu -->
+            <div id="cross-ref-original-group" style="display: none; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                <span style="font-size: 0.76rem; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.35px;">
+                  Orijinal Ekipman (OEM) Numaraları
                 </span>
-                <span id="cross-ref-original-summary" style="font-size: 0.72rem; font-weight: 600; color: #1d4ed8; font-family: monospace;"></span>
+                <span id="cross-ref-original-summary" style="font-size: 0.72rem; font-weight: 700; color: #1d4ed8; font-family: monospace;"></span>
               </div>
               <div id="cross-ref-original-badges" class="flex flex-wrap gap-1.5">
-                <!-- Orijinal OE rozetleri (Tailwind Badges) buraya dinamik dizilir -->
+                <!-- Backend originalOEMs dizisi buraya dinamik dizilir -->
               </div>
             </div>
 
-            <!-- Kırılım 2: Yan Sanayi Muadiller -->
-            <div id="cross-ref-aftermarket-group">
-              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
-                <span style="font-size: 0.74rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.3px;">
-                  Yan Sanayi Muadiller:
+            <!-- Kısım B - Yan Sanayi (Referans) Muadilleri -->
+            <div id="cross-ref-aftermarket-group" style="display: none;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                <span style="font-size: 0.76rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.35px;">
+                  Eşdeğer &amp; Muadil Marka Referansları
                 </span>
-                <span id="cross-ref-aftermarket-summary" style="font-size: 0.72rem; font-weight: 600; color: #b45309;"></span>
+                <span id="cross-ref-aftermarket-summary" style="font-size: 0.72rem; font-weight: 700; color: #b45309;"></span>
               </div>
-              <div id="cross-ref-aftermarket-badges" class="flex flex-wrap gap-1.5">
-                <!-- Yan Sanayi Muadil rozetleri (Tailwind Badges) buraya dinamik dizilir -->
+              <div id="cross-ref-aftermarket-badges" class="tw-ref-grid">
+                <!-- Backend referenceCodes dizisi buraya dinamik grid halinde dizilir -->
               </div>
             </div>
           </div>
@@ -977,66 +1067,67 @@
             <input type="number" class="form-input" id="prod-stock" name="stock" min="1" placeholder="Örn: 24" required>
           </div>
 
-          <!-- Katalog Görselleri & Teknik Şemalar Önizleme Alanı -->
+          <!-- KURAL 3: AKILLI GÖRSEL GALERİSİ VE ŞEMA SUNUMU (SMART IMAGE RENDERER) -->
           <div class="form-group" id="catalog-gallery-group" style="display: none; margin-top: 14px; margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <label class="form-label" style="margin-bottom: 0; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #1e293b;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                Katalog Görselleri & Teknik Şemalar
+                Katalog Görselleri &amp; Teknik Şemalar
               </label>
               <span id="catalog-gallery-badge" style="font-size: 0.75rem; color: #0284c7; font-weight: 600; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">0 Görsel</span>
             </div>
-            <div id="catalog-equivalent-note" style="display: none; align-items: center; gap: 6px; margin-bottom: 8px; padding: 7px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; color: #1d4ed8; font-size: 0.76rem; font-weight: 600;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <div id="catalog-equivalent-note" style="display: none; align-items: center; gap: 6px; margin-bottom: 8px; padding: 7px 10px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; color: #92400e; font-size: 0.76rem; font-weight: 700;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
               <span id="catalog-equivalent-note-text"></span>
             </div>
-            <div id="catalog-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; max-height: 220px; overflow-y: auto; padding: 10px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px;">
+            <div id="catalog-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; max-height: 260px; overflow-y: auto; padding: 10px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px;">
               <!-- API'den dönen teknik şemalar ve fotoğraflar buraya eklenecektir -->
             </div>
             <small style="color: #64748b; font-size: 0.76rem; margin-top: 5px; display: block;">* Seçili şema ve fotoğraflar ürün kaydedildiğinde otomatik olarak veritabanına aktarılır.</small>
           </div>
 
-          <!-- ZENGİN VERİLER ÖNİZLEME ALANI (prompt.md: Muadiller, Uyumlu Araçlar, Teknik Özellikler) -->
-          <div class="form-group" id="enriched-data-container" style="display: none; margin-top: 14px; margin-bottom: 16px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px;">
+          <!-- KURAL 4: DİNAMİK MÜHENDİSLİK TABLOSU (SPECIFICATIONS TABLE) & UYUMLU ARAÇLAR -->
+          <div class="form-group" id="enriched-data-container" style="display: none; margin-top: 14px; margin-bottom: 16px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-              <div style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #0f172a; font-size: 0.88rem;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Zenginleştirilmiş Otomotiv Verisi (Veritabanına Kaydedilecek)
+              <div style="display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #0f172a; font-size: 0.88rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                Mühendislik Verileri &amp; Araç Uyumluluğu
               </div>
-              <span id="enriched-status-badge" style="font-size: 0.72rem; color: #059669; font-weight: 700; background: #dcfce7; padding: 2px 8px; border-radius: 10px;">Eşzamanlı Hazır</span>
+              <span id="enriched-status-badge" style="font-size: 0.72rem; color: #059669; font-weight: 700; background: #dcfce7; padding: 2px 8px; border-radius: 10px;">Canlı API Verisi</span>
             </div>
 
-            <!-- Muadiller (Cross-References) Önizleme -->
-            <div style="margin-bottom: 12px;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
-                Bu Parçayla Eşdeğer Kodlar (Cross-References):
+            <!-- KURAL 4: Teknik Özellikler (Specifications Table) -->
+            <div id="enriched-specs-section" style="display: none; margin-bottom: 14px;">
+              <span style="font-size: 0.76rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.4px; display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                Teknik Özellikler
               </span>
-              <div id="preview-cross-references" style="display: flex; flex-direction: column; gap: 8px;">
-                <!-- Muadil rozetleri buraya gelecek -->
+              <div id="preview-attributes-table" class="tw-specs-table-wrap">
+                <!-- API'den gelen technicalSpecs objesi Object.entries ile dinamik tablo olarak buraya basılır -->
               </div>
             </div>
 
             <!-- Uyumlu Araçlar (Fitment) Önizleme -->
-            <div style="margin-bottom: 12px;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
+            <div id="enriched-fitment-section" style="display: none; margin-bottom: 12px;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
                 Uyumlu Araç Modelleri (Vehicle Fitment):
               </span>
-              <div id="preview-fitment-list" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto;">
+              <div id="preview-fitment-list" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 125px; overflow-y: auto;">
                 <!-- Uyumlu araç rozetleri buraya gelecek -->
               </div>
             </div>
 
-            <!-- Teknik Özellikler (Attributes) Önizleme -->
-            <div>
-              <span style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
-                Teknik Özellikler (Attributes):
+            <!-- Çapraz Referans Özeti (Senkronize Alan) -->
+            <div id="enriched-cross-section" style="display: none;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
+                Çapraz Referans Özeti:
               </span>
-              <div id="preview-attributes-table" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; font-size: 0.75rem;">
-                <!-- Özellik kutuları buraya gelecek -->
+              <div id="preview-cross-references" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Muadil rozetleri buraya gelecek -->
               </div>
             </div>
           </div>
@@ -3353,15 +3444,21 @@
 
       function clearDeepCrossReferences() {
         const deepBox = document.getElementById('deep-cross-references-container');
+        const origGroup = document.getElementById('cross-ref-original-group');
+        const afterGroup = document.getElementById('cross-ref-aftermarket-group');
         const origBadges = document.getElementById('cross-ref-original-badges');
         const afterBadges = document.getElementById('cross-ref-aftermarket-badges');
         const origSummary = document.getElementById('cross-ref-original-summary');
         const afterSummary = document.getElementById('cross-ref-aftermarket-summary');
+        const summaryBadge = document.getElementById('deep-cross-ref-summary-badge');
         if (deepBox) deepBox.style.display = 'none';
+        if (origGroup) origGroup.style.display = 'none';
+        if (afterGroup) afterGroup.style.display = 'none';
         if (origBadges) origBadges.innerHTML = '';
         if (afterBadges) afterBadges.innerHTML = '';
         if (origSummary) origSummary.textContent = '';
         if (afterSummary) afterSummary.textContent = '';
+        if (summaryBadge) summaryBadge.textContent = '';
       }
 
       function clearCatalogGallery() {
@@ -3384,7 +3481,7 @@
         ensureManualUploadActive();
       }
 
-      function renderCatalogEmptyState(message = 'Bu parça için teknik şema bulunmamaktadır.') {
+      function renderCatalogEmptyState(message = 'Bu parça veya muadilleri için teknik şema bulunmamaktadır.') {
         currentCatalogImages = [];
         const galleryGroup = document.getElementById('catalog-gallery-group');
         const galleryGrid = document.getElementById('catalog-gallery-grid');
@@ -3407,14 +3504,17 @@
 
         if (galleryGrid) {
           galleryGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 22px 16px; text-align: center; background: #fff5f5; border: 1.5px dashed #fca5a5; border-radius: 8px; color: #991b1b;">
-              <div style="display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.84rem; font-weight: 600;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 26px 18px; text-align: center; background: linear-gradient(180deg, #fff5f5 0%, #fef2f2 100%); border: 1.5px dashed #fca5a5; border-radius: 10px; color: #991b1b;">
+              <div style="width: 40px; height: 40px; border-radius: 9999px; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #dc2626; box-shadow: 0 1px 2px rgba(220,38,38,0.12);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                  <line x1="2" y1="2" x2="22" y2="22"></line>
                 </svg>
-                <span>${escapeHtml(message)}</span>
+              </div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #991b1b; line-height: 1.4;">
+                ${escapeHtml(message)}
               </div>
               <div style="font-size: 0.72rem; color: #7f1d1d; opacity: 0.9;">
                 İsteğe bağlı olarak aşağıdan 'Manuel Görsel Yükle' alanını kullanarak kendi fotoğrafınızı yükleyebilirsiniz.
@@ -3442,7 +3542,7 @@
 
         if (!newItems || !Array.isArray(newItems) || newItems.length === 0) {
           if (currentCatalogImages.length === 0) {
-            renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
+            renderCatalogEmptyState('Bu parça veya muadilleri için teknik şema bulunmamaktadır.');
           }
           return;
         }
@@ -3456,20 +3556,31 @@
         });
 
         if (currentCatalogImages.length === 0) {
-          renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
+          renderCatalogEmptyState('Bu parça veya muadilleri için teknik şema bulunmamaktadır.');
           return;
         }
 
         if (galleryGroup) galleryGroup.style.display = 'block';
+
+        // KURAL 3: Eşdeğer Görsel Bildirimi (isFallback & sourceCode kontrolü)
+        const firstFallbackItem = currentCatalogImages.find(
+          it => typeof it === 'object' && it !== null && (it.isFallback === true || Boolean(it.sourceCode))
+        );
+        const resolvedFallbackSource =
+          (firstFallbackItem && firstFallbackItem.sourceCode) ||
+          equivalentSourceCode ||
+          null;
+
         if (eqNote && eqNoteText) {
-          if (equivalentSourceCode) {
-            eqNoteText.textContent = `Bu görsel eşdeğer parçadan (${equivalentSourceCode}) alınmıştır`;
+          if (resolvedFallbackSource) {
+            eqNoteText.textContent = `Görsel eşdeğer parçadan (${resolvedFallbackSource}) alınmıştır`;
             eqNote.style.display = 'flex';
           } else {
             eqNoteText.textContent = '';
             eqNote.style.display = 'none';
           }
         }
+
         if (galleryBadge) {
           galleryBadge.textContent = `${currentCatalogImages.length} Görsel/Şema`;
           galleryBadge.style.background = '#e0f2fe';
@@ -3487,6 +3598,11 @@
           }
 
           const title = typeof item === 'object' && (item.name || item.title) ? (item.name || item.title) : `Teknik Şema #${idx + 1}`;
+          const itemIsFallback = (typeof item === 'object' && item !== null && item.isFallback === true) || Boolean(equivalentSourceCode);
+          const itemSourceCode = (typeof item === 'object' && item !== null && item.sourceCode) ? item.sourceCode : equivalentSourceCode;
+          const fallbackBadgeHtml = (itemIsFallback && itemSourceCode)
+            ? `<div class="tw-fallback-badge" title="Görsel eşdeğer parçadan (${escapeHtml(itemSourceCode)}) alınmıştır">Görsel eşdeğer parçadan (${escapeHtml(itemSourceCode)}) alınmıştır</div>`
+            : '';
 
           const card = document.createElement('div');
           card.className = 'catalog-img-card active';
@@ -3494,13 +3610,14 @@
           card.dataset.url = url;
 
           card.innerHTML = `
-            <div style="width: 100%; height: 85px; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 4px;">
-              <img src="${url}" alt="${title}" loading="eager" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;" onerror="if (!this.dataset.retried) { this.dataset.retried = '1'; this.src = '/api/catalog/image-proxy?url=' + encodeURIComponent('${url}'); }">
+            ${fallbackBadgeHtml}
+            <div style="width: 100%; height: 110px; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 6px;">
+              <img src="${escapeHtml(url)}" alt="${escapeHtml(title)}" loading="eager" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;" onerror="if (!this.dataset.retried) { this.dataset.retried = '1'; this.src = '/api/catalog/image-proxy?url=' + encodeURIComponent('${escapeHtml(url)}'); }">
             </div>
-            <div style="padding: 6px 4px; font-size: 0.68rem; color: #1e293b; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; text-align: center; border-top: 1px solid #f1f5f9;" title="${title}">
-              ${title}
+            <div style="padding: 6px 6px; font-size: 0.68rem; color: #1e293b; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; text-align: center; border-top: 1px solid #f1f5f9;" title="${escapeHtml(title)}">
+              ${escapeHtml(title)}
             </div>
-            <div class="card-check-badge" style="position: absolute; top: 4px; right: 4px; background: #2563eb; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px;">
+            <div class="card-check-badge" style="position: absolute; top: 4px; right: 4px; background: #2563eb; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 4;">
               ✓
             </div>
           `;
@@ -3655,20 +3772,51 @@
       }
 
       /**
-       * extractEquivalencePool:
-       * Hem Orijinal (OE) Kodları hem de Yan Sanayi (Aftermarket) Muadilleri
-       * ayrıştırıp tekilleştirerek döner.
+       * extractOeSearchPayload:
+       * Backend yanıtı hem doğrudan kök objede (root JSON) hem de `json.data` altında
+       * gelebileceği için canlı API verisini güvenle ayrıştırır.
+       */
+      function extractOeSearchPayload(json) {
+        if (!json || typeof json !== 'object') return null;
+        if (json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
+          return json.data;
+        }
+        if (
+          json.success === true ||
+          Array.isArray(json.originalOEMs) ||
+          Array.isArray(json.referenceCodes) ||
+          Array.isArray(json.images) ||
+          (json.technicalSpecs && typeof json.technicalSpecs === 'object') ||
+          Boolean(json.partName) ||
+          Boolean(json.rootOEM)
+        ) {
+          return json;
+        }
+        return null;
+      }
+
+      /**
+       * extractEquivalencePool (KURAL 2):
+       * Kısım A - Orijinal (OEM) Kodları Havuzu (`originalOEMs`, `rootOEM`, `originalCodes`, `equivalentOEs`)
+       * Kısım B - Yan Sanayi (Referans) Muadilleri (`referenceCodes`, `aftermarketCodes`, `crossReferences`)
+       * verilerini canlı API yanıtından ayrıştırıp tekilleştirerek döner.
        */
       function extractEquivalencePool(data, searchedCode = '') {
-        if (!data) return { originalCodes: [], aftermarketItems: [] };
+        if (!data || typeof data !== 'object') {
+          return { originalCodes: [], aftermarketItems: [] };
+        }
 
-        const rawAftermarket = Array.isArray(data.aftermarketCodes) && data.aftermarketCodes.length > 0
-          ? data.aftermarketCodes
-          : (Array.isArray(data.crossReferences) ? data.crossReferences : []);
+        const rawOriginals = [
+          ...(Array.isArray(data.originalOEMs) ? data.originalOEMs : []),
+          ...(Array.isArray(data.originalCodes) ? data.originalCodes : []),
+          ...(Array.isArray(data.equivalentOEs) ? data.equivalentOEs : [])
+        ];
 
-        const rawOriginals = Array.isArray(data.originalCodes) && data.originalCodes.length > 0
-          ? data.originalCodes
-          : (Array.isArray(data.equivalentOEs) ? data.equivalentOEs : []);
+        const rawAftermarket = [
+          ...(Array.isArray(data.referenceCodes) ? data.referenceCodes : []),
+          ...(Array.isArray(data.aftermarketCodes) ? data.aftermarketCodes : []),
+          ...(Array.isArray(data.crossReferences) ? data.crossReferences : [])
+        ];
 
         const originalList = [];
         const originalNormSet = new Set();
@@ -3678,21 +3826,21 @@
           const clean = String(rawCode).trim().toUpperCase();
           const norm = normalizeRefCode(clean);
           if (!norm || originalNormSet.has(norm)) return;
-          // Yan sanayi marka ön ekli kodları orijinal OE havuzuna karıştırma
-          if (/^(TRW|AYD|BOSCH|VALEO|BREMBO|FERODO|MANN|MAHLE|SACHS|LUK|FEBI|INA|NGK|DELPHI)\b/i.test(clean)) {
+          // Yan sanayi marka ön ekli kodları orijinal OEM havuzuna karıştırma
+          if (/^(TRW|AYD|BOSCH|VALEO|BREMBO|FERODO|MANN|MAHLE|SACHS|LUK|FEBI|INA|NGK|DELPHI|TEXTAR|ATE|ZIMMERMANN|MEYLE|LEMFORDER)\b/i.test(clean)) {
             return;
           }
           originalNormSet.add(norm);
           originalList.push(clean);
         };
 
+        if (data.rootOEM) addOriginal(data.rootOEM);
+        if (data.primaryOe) addOriginal(data.primaryOe);
+
         rawOriginals.forEach(item => {
           const c = typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe));
           addOriginal(c);
         });
-
-        if (data.primaryOe) addOriginal(data.primaryOe);
-        if (!data.isAftermarketQuery && data.oeNumber) addOriginal(data.oeNumber);
 
         const aftermarketItems = [];
         const afterNormSet = new Set();
@@ -3701,27 +3849,32 @@
           if (!item) return;
           let brand = '';
           let code = '';
-          let quality = 'Yan Sanayi Muadil';
 
           if (typeof item === 'string') {
-            code = item.trim();
-          } else {
-            brand = String(item.brand || '').trim();
-            code = String(item.code || item.oeNumber || item.oe || '').trim();
-            if (item.quality) quality = String(item.quality).trim();
+            const rawStr = item.trim();
+            if (rawStr.includes(':')) {
+              const idx = rawStr.indexOf(':');
+              brand = rawStr.slice(0, idx).trim();
+              code = rawStr.slice(idx + 1).trim();
+            } else {
+              code = rawStr;
+            }
+          } else if (typeof item === 'object') {
+            brand = String(item.brand || item.manufacturer || item.make || '').trim();
+            code = String(item.code || item.referenceCode || item.oeNumber || item.oe || '').trim();
           }
 
           if (!code) return;
           const normCode = normalizeRefCode(code);
           const normBrandCode = normalizeRefCode(brand + code);
 
-          // Eğer bu kayıt aslında orijinal bir OE koduysa (örn: Renault OEM 410601241R), Orijinal Kodlar'a ekle
-          if (/oem|orijinal/i.test(brand) || originalNormSet.has(normCode)) {
+          // Eğer bu kayıt aslında orijinal bir OEM koduysa Orijinal Kodlar havuzuna ekle
+          if (/^(oem|orijinal|oe)$/i.test(brand) || originalNormSet.has(normCode)) {
             addOriginal(code);
             return;
           }
 
-          if (afterNormSet.has(normCode) || afterNormSet.has(normBrandCode)) return;
+          if (afterNormSet.has(normBrandCode) || (!brand && afterNormSet.has(normCode))) return;
           afterNormSet.add(normCode);
           afterNormSet.add(normBrandCode);
 
@@ -3734,13 +3887,14 @@
             shortCode = parts.slice(1).join(' ');
           }
 
-          const fullLabel = brand ? `${brand} ${shortCode}`.trim() : shortCode;
+          const displayBrand = brand || 'Muadil';
+          const fullLabel = `${displayBrand}: ${shortCode}`;
 
           aftermarketItems.push({
-            brand: brand || 'Muadil',
+            brand: displayBrand,
+            code: shortCode,
             shortCode: shortCode,
-            fullLabel: fullLabel,
-            quality: quality
+            fullLabel: fullLabel
           });
         });
 
@@ -3751,12 +3905,15 @@
       }
 
       /**
-       * renderDeepCrossReferences:
-       * Aşama 2 & Aşama 3: 'Bu Parçayla Eşdeğer Kodlar (Cross-References)' bileşenini
-       * Tailwind CSS rozetleriyle (Orijinal Kodlar & Yan Sanayi Muadiller kırılımıyla) ekrana basar.
+       * renderDeepCrossReferences (KURAL 1 & KURAL 2):
+       * Kısım A - "Orijinal Ekipman (OEM) Numaraları" (`originalOEMs` -> Tailwind rozetleri)
+       * Kısım B - "Eşdeğer & Muadil Marka Referansları" (`referenceCodes` -> Markalar Kalın, Kodlar Belirgin Grid)
+       * Boş olan bölümlerin HTML kapsayıcısı tamamen gizlenir (`display: none`).
        */
       function renderDeepCrossReferences(data, searchedCode = '') {
         const deepBox = document.getElementById('deep-cross-references-container');
+        const origGroupEl = document.getElementById('cross-ref-original-group');
+        const afterGroupEl = document.getElementById('cross-ref-aftermarket-group');
         const origBadgesEl = document.getElementById('cross-ref-original-badges');
         const afterBadgesEl = document.getElementById('cross-ref-aftermarket-badges');
         const origSummaryEl = document.getElementById('cross-ref-original-summary');
@@ -3767,108 +3924,193 @@
 
         if (originalCodes.length === 0 && aftermarketItems.length === 0) {
           if (deepBox) deepBox.style.display = 'none';
+          if (origGroupEl) origGroupEl.style.display = 'none';
+          if (afterGroupEl) afterGroupEl.style.display = 'none';
           return '';
         }
 
-        const normSearch = normalizeRefCode(searchedCode || (data && data.oeNumber) || '');
+        const normSearch = normalizeRefCode(searchedCode || (data && (data.searchedQuery || data.oeNumber)) || '');
 
-        const origSummaryText = originalCodes.slice(0, 3).join(', ') + (originalCodes.length > 3 ? ` (+${originalCodes.length - 3} OE)` : '');
-        const afterSummaryText = aftermarketItems.slice(0, 2).map(a => a.fullLabel).join(', ') + (aftermarketItems.length > 2 ? ` (+${aftermarketItems.length - 2} Muadil)` : '');
-
-        if (origSummaryEl) origSummaryEl.textContent = origSummaryText;
-        if (afterSummaryEl) afterSummaryEl.textContent = afterSummaryText;
         if (summaryBadgeEl) {
-          summaryBadgeEl.textContent = `${originalCodes.length} Orijinal OE • ${aftermarketItems.length} Yan Sanayi`;
+          const parts = [];
+          if (originalCodes.length > 0) parts.push(`${originalCodes.length} OEM`);
+          if (aftermarketItems.length > 0) parts.push(`${aftermarketItems.length} Muadil Referans`);
+          summaryBadgeEl.textContent = parts.join(' • ');
         }
 
-        const origBadgesHtml = originalCodes.length > 0
-          ? originalCodes.map(oeCode => {
-              const isSearched = normSearch && normalizeRefCode(oeCode) === normSearch;
-              return `
-                <span class="tw-badge ${isSearched ? 'tw-badge-oe-active' : 'tw-badge-oe'} inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold font-mono bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" title="Orijinal Ekipman (OE) Numarası: ${escapeHtml(oeCode)}">
-                  <span style="width: 6px; height: 6px; border-radius: 9999px; background: ${isSearched ? '#1d4ed8' : '#3b82f6'}; display: inline-block; flex-shrink: 0;"></span>
-                  <span>${escapeHtml(oeCode)}</span>
-                </span>
-              `;
-            }).join('')
-          : '<span style="color:#94a3b8; font-size: 0.74rem;">Orijinal OE kaydı bulunamadı</span>';
+        // Kısım A: Orijinal Ekipman (OEM) Numaraları
+        let origBadgesHtml = '';
+        if (originalCodes.length > 0) {
+          if (origGroupEl) origGroupEl.style.display = 'block';
+          if (origSummaryEl) {
+            origSummaryEl.textContent = `${originalCodes.length} Adet OEM Kodu`;
+          }
+          origBadgesHtml = originalCodes.map(oeCode => {
+            const isSearched = normSearch && normalizeRefCode(oeCode) === normSearch;
+            return `
+              <span class="tw-badge ${isSearched ? 'tw-badge-oe-active' : 'tw-badge-oe'}" title="Orijinal Ekipman (OEM) Numarası: ${escapeHtml(oeCode)}">
+                <span style="width: 6px; height: 6px; border-radius: 9999px; background: ${isSearched ? '#1d4ed8' : '#3b82f6'}; display: inline-block; flex-shrink: 0;"></span>
+                <span>${escapeHtml(oeCode)}</span>
+              </span>
+            `;
+          }).join('');
+          if (origBadgesEl) origBadgesEl.innerHTML = origBadgesHtml;
+        } else {
+          if (origGroupEl) origGroupEl.style.display = 'none';
+          if (origBadgesEl) origBadgesEl.innerHTML = '';
+          if (origSummaryEl) origSummaryEl.textContent = '';
+        }
 
-        const afterBadgesHtml = aftermarketItems.length > 0
-          ? aftermarketItems.map(item => {
-              const normFull = normalizeRefCode(item.fullLabel);
-              const normShort = normalizeRefCode(item.shortCode);
-              const isSearched = normSearch && (normSearch === normFull || normSearch === normShort || normFull.endsWith(normSearch));
-              return `
-                <span class="tw-badge ${isSearched ? 'tw-badge-aftermarket-active' : 'tw-badge-aftermarket'} inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-sm" title="${escapeHtml(item.quality || 'Yan Sanayi Muadil')} - ${escapeHtml(item.fullLabel)}">
-                  <span style="font-weight: 800; color: #78350f;">${escapeHtml(item.brand)}</span>
-                  <span class="font-mono" style="font-weight: 700; color: #b45309;">${escapeHtml(item.shortCode)}</span>
-                </span>
-              `;
-            }).join('')
-          : '<span style="color:#94a3b8; font-size: 0.74rem;">Yan sanayi muadil kaydı bulunamadı</span>';
+        // Kısım B: Eşdeğer & Muadil Marka Referansları
+        let afterBadgesHtml = '';
+        if (aftermarketItems.length > 0) {
+          if (afterGroupEl) afterGroupEl.style.display = 'block';
+          if (afterSummaryEl) {
+            afterSummaryEl.textContent = `${aftermarketItems.length} Marka Referansı`;
+          }
+          afterBadgesHtml = aftermarketItems.map(item => {
+            const normFull = normalizeRefCode(item.brand + item.shortCode);
+            const normShort = normalizeRefCode(item.shortCode);
+            const isSearched = normSearch && (normSearch === normFull || normSearch === normShort || normFull.endsWith(normSearch));
+            return `
+              <div class="tw-ref-card ${isSearched ? 'tw-ref-card-active' : ''}" title="${escapeHtml(item.brand)}: ${escapeHtml(item.shortCode)}">
+                <strong class="tw-ref-brand">${escapeHtml(item.brand)}:</strong>
+                <span class="tw-ref-code">${escapeHtml(item.shortCode)}</span>
+              </div>
+            `;
+          }).join('');
+          if (afterBadgesEl) afterBadgesEl.innerHTML = afterBadgesHtml;
+        } else {
+          if (afterGroupEl) afterGroupEl.style.display = 'none';
+          if (afterBadgesEl) afterBadgesEl.innerHTML = '';
+          if (afterSummaryEl) afterSummaryEl.textContent = '';
+        }
 
-        if (origBadgesEl) origBadgesEl.innerHTML = origBadgesHtml;
-        if (afterBadgesEl) afterBadgesEl.innerHTML = afterBadgesHtml;
         if (deepBox) deepBox.style.display = 'block';
-
-        return `
-          <div style="margin-bottom: 6px;">
-            <div style="font-size: 0.72rem; font-weight: 800; color: #1e40af; margin-bottom: 4px;">
-              Orijinal Kodlar: <span style="font-family: monospace; font-weight: 600;">${escapeHtml(originalCodes.slice(0, 2).join(', '))}</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">${origBadgesHtml}</div>
-          </div>
-          <div>
-            <div style="font-size: 0.72rem; font-weight: 800; color: #92400e; margin-bottom: 4px;">
-              Yan Sanayi Muadiller: <span style="font-weight: 600;">${escapeHtml(aftermarketItems.slice(0, 2).map(a => a.fullLabel).join(', '))}</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">${afterBadgesHtml}</div>
-          </div>
-        `;
+        return origBadgesHtml || afterBadgesHtml;
       }
       window.renderDeepCrossReferences = renderDeepCrossReferences;
 
+      /**
+       * extractTechnicalSpecsEntries (KURAL 1 & KURAL 4):
+       * API'den gelen `technicalSpecs` objesini (`Object.entries` kullanarak)
+       * veya kaydedilmiş ürün `attributes` dizisini okur; sahte/statik garanti veya TSE
+       * metinlerini kesin olarak filtreler.
+       */
+      function extractTechnicalSpecsEntries(data) {
+        if (!data || typeof data !== 'object') return [];
+        const entries = [];
+        const seenKeys = new Set();
+
+        const isFakeBoilerplate = (k, v) => {
+          const combined = `${k} ${v}`.toLowerCase();
+          return (
+            combined.includes('12 ay / 20.000 km') ||
+            combined.includes('tse / ce') ||
+            combined.includes('garanti kapsamı')
+          );
+        };
+
+        if (data.technicalSpecs && typeof data.technicalSpecs === 'object' && !Array.isArray(data.technicalSpecs)) {
+          Object.entries(data.technicalSpecs).forEach(([rawKey, rawVal]) => {
+            const key = String(rawKey || '').trim();
+            const val = rawVal !== null && rawVal !== undefined ? String(rawVal).trim() : '';
+            if (!key || !val || isFakeBoilerplate(key, val)) return;
+            const normKey = key.toLowerCase();
+            if (seenKeys.has(normKey)) return;
+            seenKeys.add(normKey);
+            entries.push([key, val]);
+          });
+        }
+
+        if (Array.isArray(data.attributes)) {
+          data.attributes.forEach(attr => {
+            if (!attr || typeof attr !== 'object') return;
+            const key = String(attr.name || attr.key || '').trim();
+            const val = attr.value !== null && attr.value !== undefined ? String(attr.value).trim() : '';
+            if (!key || !val || isFakeBoilerplate(key, val)) return;
+            const normKey = key.toLowerCase();
+            if (seenKeys.has(normKey)) return;
+            seenKeys.add(normKey);
+            entries.push([key, val]);
+          });
+        }
+
+        return entries;
+      }
+
+      /**
+       * renderEnrichedData (KURAL 1, KURAL 2, KURAL 4):
+       * - Çapraz referans ağını (`renderDeepCrossReferences`) günceller.
+       * - Sağ panelde "Teknik Özellikler" (`technicalSpecs` -> `Object.entries`) tablosunu oluşturur.
+       * - "Uyumlu Araçlar" listesini oluşturur.
+       * - Verisi boş olan tüm alt konteynerleri gizler (`display: none`).
+       */
       function renderEnrichedData(data, searchedCode = '') {
         const container = document.getElementById('enriched-data-container');
-        if (!container) return;
-
+        const specsSection = document.getElementById('enriched-specs-section');
+        const fitmentSection = document.getElementById('enriched-fitment-section');
+        const crossSection = document.getElementById('enriched-cross-section');
         const crossesBox = document.getElementById('preview-cross-references');
         const fitmentBox = document.getElementById('preview-fitment-list');
         const attrsBox = document.getElementById('preview-attributes-table');
 
-        const deepCrossHtml = renderDeepCrossReferences(data, searchedCode);
-        const crosses = (data && data.crossReferences) || [];
-        const originals = (data && (data.originalCodes || data.equivalentOEs)) || [];
-        const fitments = (data && data.compatibleVehicles) || [];
-        const attrs = (data && data.attributes) || [];
+        renderDeepCrossReferences(data, searchedCode);
 
-        if (crosses.length === 0 && originals.length === 0 && fitments.length === 0 && attrs.length === 0) {
+        // Kısım A & Kısım B zaten üstteki #deep-cross-references-container içinde gösterildiği için
+        // alt kutuda mükerrer gösterimi gizle
+        if (crossSection) crossSection.style.display = 'none';
+        if (crossesBox) crossesBox.innerHTML = '';
+
+        if (!container) return;
+
+        // KURAL 4: Dinamik Mühendislik Tablosu (Specifications Table - Object.entries(technicalSpecs))
+        const specEntries = extractTechnicalSpecsEntries(data);
+        if (specEntries.length > 0 && attrsBox && specsSection) {
+          specsSection.style.display = 'block';
+          attrsBox.innerHTML = `
+            <table class="tw-specs-table">
+              <tbody>
+                ${specEntries.map(([specKey, specVal]) => `
+                  <tr>
+                    <th>${escapeHtml(specKey)}</th>
+                    <td>${escapeHtml(specVal)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          if (specsSection) specsSection.style.display = 'none';
+          if (attrsBox) attrsBox.innerHTML = '';
+        }
+
+        // Uyumlu Araçlar (Fitment)
+        const fitments = (data && Array.isArray(data.compatibleVehicles))
+          ? data.compatibleVehicles.filter(f => f && (f.make || f.model || f.years || f.engine))
+          : [];
+
+        if (fitments.length > 0 && fitmentBox && fitmentSection) {
+          fitmentSection.style.display = 'block';
+          fitmentBox.innerHTML = fitments.map(f => {
+            const detailParts = [f.years, f.engine].filter(Boolean).join(' • ');
+            return `
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 0.75rem; color: #1e293b; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <strong style="font-weight: 700; color: #0f172a;">${escapeHtml([f.make, f.model].filter(Boolean).join(' '))}</strong>
+                ${detailParts ? `<span style="color: #64748b; font-size: 0.71rem; font-weight: 500;">${escapeHtml(detailParts)}</span>` : ''}
+              </div>
+            `;
+          }).join('');
+        } else {
+          if (fitmentSection) fitmentSection.style.display = 'none';
+          if (fitmentBox) fitmentBox.innerHTML = '';
+        }
+
+        // KURAL 1: Eğer gösterilecek hiçbir zengin veri yoksa ana konteyneri tamamen gizle
+        if (specEntries.length === 0 && fitments.length === 0) {
           container.style.display = 'none';
-          return;
-        }
-
-        container.style.display = 'block';
-
-        if (crossesBox) {
-          crossesBox.innerHTML = deepCrossHtml || '<span style="color:#94a3b8; font-size: 0.74rem;">Muadil kaydı yok</span>';
-        }
-
-        if (fitmentBox) {
-          fitmentBox.innerHTML = fitments.map(f => `
-            <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 0.74rem; color: #334155;">
-              <strong>${escapeHtml(f.make || '')} ${escapeHtml(f.model || '')}</strong>
-              <span style="color: #64748b;">(${escapeHtml(f.years || '')} - ${escapeHtml(f.engine || '')})</span>
-            </div>
-          `).join('') || '<span style="color:#94a3b8; font-size: 0.74rem;">Uyumlu araç kaydı yok</span>';
-        }
-
-        if (attrsBox) {
-          attrsBox.innerHTML = attrs.map(a => `
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px;">
-              <span style="color: #64748b; font-size: 0.7rem; display: block; font-weight: 600;">${escapeHtml(a.name || a.key || '')}</span>
-              <span style="color: #0f172a; font-weight: 700; font-size: 0.78rem;">${escapeHtml(a.value || '')}</span>
-            </div>
-          `).join('') || '<span style="color:#94a3b8; font-size: 0.74rem;">Teknik özellik yok</span>';
+        } else {
+          container.style.display = 'block';
         }
       }
       window.renderEnrichedData = renderEnrichedData;
@@ -3877,113 +4119,70 @@
       const inputProdOe = document.getElementById('prod-oe');
 
       /**
-       * resolveCrossReferenceData:
-       * Girilen OE veya yan sanayi (aftermarket) referans kodunun bağlı olduğu
-       * ana OE ağacını (primaryOe, originalCodes, aftermarketCodes) çözer.
-       */
-      async function resolveCrossReferenceData(queryCode) {
-        if (!queryCode) return null;
-
-        try {
-          const res = await apiFetch(`/catalog/cross-reference/${encodeURIComponent(queryCode.trim())}`, { method: 'GET' });
-          if (res && res.success && res.data) {
-            return res.data;
-          }
-        } catch (e) {
-          console.warn('[CROSS_REF_BACKEND_ERR]:', e);
-        }
-
-        try {
-          const res2 = await apiFetch(`/catalog/cross-match/${encodeURIComponent(queryCode.trim())}`, { method: 'GET' });
-          if (res2 && res2.success && res2.data) {
-            return res2.data;
-          }
-        } catch (e) {}
-
-        return null;
-      }
-
-      async function resolveCrossReferenceOe(queryCode) {
-        const crossData = await resolveCrossReferenceData(queryCode);
-        if (!crossData) return null;
-        const matched = crossData.primaryOe || crossData.oeNumber || crossData.matchedOe;
-        return matched ? String(matched).trim() : null;
-      }
-
-      /**
        * mergeDeepCrossTreeData:
-       * Çift yönlü derin sorguda (Deep Cross-Match) ana OE ağacından ve
-       * ikincil sorgulardan dönen tüm Orijinal Kodları ve Yan Sanayi Muadilleri
-       * tek bir havuzda eksiksiz birleştirir.
+       * İkincil OEM sorgularından dönen originalOEMs, referenceCodes ve technicalSpecs
+       * verilerini ana veri objesiyle eksiksiz birleştirir.
        */
       function mergeDeepCrossTreeData(targetData, sourceData) {
         if (!targetData || !sourceData) return targetData;
 
-        if (!targetData.primaryOe && (sourceData.primaryOe || sourceData.oeNumber)) {
-          targetData.primaryOe = sourceData.primaryOe || sourceData.oeNumber;
+        if (!targetData.rootOEM && (sourceData.rootOEM || sourceData.primaryOe || sourceData.oeNumber)) {
+          targetData.rootOEM = sourceData.rootOEM || sourceData.primaryOe || sourceData.oeNumber;
         }
 
-        // Orijinal Kodları (OE Revisions) Birleştir
-        const origList = [];
-        const origNorms = new Set();
-        const pushOrig = (c) => {
-          if (!c) return;
-          const str = typeof c === 'string' ? c.trim().toUpperCase() : String(c.oeNumber || c.code || '').trim().toUpperCase();
-          const norm = normalizeRefCode(str);
-          if (!norm || origNorms.has(norm)) return;
-          if (/^(TRW|AYD|BOSCH|VALEO|BREMBO|FERODO|MANN|MAHLE|SACHS|LUK|FEBI)\b/i.test(str)) return;
-          origNorms.add(norm);
-          origList.push(str);
-        };
+        const mergedPool = extractEquivalencePool({
+          rootOEM: targetData.rootOEM || sourceData.rootOEM,
+          primaryOe: targetData.primaryOe || sourceData.primaryOe,
+          originalOEMs: [
+            ...(Array.isArray(targetData.originalOEMs) ? targetData.originalOEMs : []),
+            ...(Array.isArray(sourceData.originalOEMs) ? sourceData.originalOEMs : []),
+            ...(Array.isArray(targetData.originalCodes) ? targetData.originalCodes : []),
+            ...(Array.isArray(sourceData.originalCodes) ? sourceData.originalCodes : [])
+          ],
+          referenceCodes: [
+            ...(Array.isArray(targetData.referenceCodes) ? targetData.referenceCodes : []),
+            ...(Array.isArray(sourceData.referenceCodes) ? sourceData.referenceCodes : []),
+            ...(Array.isArray(targetData.crossReferences) ? targetData.crossReferences : []),
+            ...(Array.isArray(sourceData.crossReferences) ? sourceData.crossReferences : [])
+          ]
+        });
 
-        (sourceData.originalCodes || sourceData.equivalentOEs || []).forEach(pushOrig);
-        (targetData.originalCodes || targetData.equivalentOEs || []).forEach(pushOrig);
-        if (sourceData.primaryOe) pushOrig(sourceData.primaryOe);
-        if (targetData.primaryOe) pushOrig(targetData.primaryOe);
+        targetData.originalOEMs = mergedPool.originalCodes;
+        targetData.originalCodes = mergedPool.originalCodes;
+        targetData.referenceCodes = mergedPool.aftermarketItems.map(item => ({
+          brand: item.brand,
+          code: item.shortCode
+        }));
+        targetData.crossReferences = targetData.referenceCodes;
 
-        targetData.originalCodes = origList;
-        targetData.equivalentOEs = origList;
+        if (
+          (!targetData.technicalSpecs || Object.keys(targetData.technicalSpecs).length === 0) &&
+          sourceData.technicalSpecs &&
+          typeof sourceData.technicalSpecs === 'object'
+        ) {
+          targetData.technicalSpecs = { ...sourceData.technicalSpecs };
+        } else if (
+          targetData.technicalSpecs &&
+          sourceData.technicalSpecs &&
+          typeof sourceData.technicalSpecs === 'object'
+        ) {
+          targetData.technicalSpecs = { ...sourceData.technicalSpecs, ...targetData.technicalSpecs };
+        }
 
-        // Yan Sanayi Muadilleri (Aftermarket Siblings) Birleştir
-        const afterList = [];
-        const afterNorms = new Set();
-        const pushAfter = (item) => {
-          if (!item) return;
-          const codeStr = typeof item === 'string' ? item : (item.code || item.oeNumber || '');
-          const brandStr = typeof item === 'object' ? (item.brand || '') : '';
-          const norm = normalizeRefCode(codeStr);
-          if (!norm || origNorms.has(norm) || afterNorms.has(norm)) return;
-          if (/oem|orijinal/i.test(brandStr)) {
-            pushOrig(codeStr);
-            return;
-          }
-          afterNorms.add(norm);
-          afterList.push(typeof item === 'string' ? { brand: 'Muadil', code: item, oeNumber: item } : item);
-        };
-
-        (sourceData.aftermarketCodes || sourceData.crossReferences || []).forEach(pushAfter);
-        (targetData.aftermarketCodes || targetData.crossReferences || []).forEach(pushAfter);
-
-        targetData.aftermarketCodes = afterList;
-        targetData.crossReferences = afterList;
-
-        // Eğer hedef veride parça adı jenerikse veya eksikse, ana OE ağacından zenginleştir
-        const targetNameLower = String(targetData.partName || '').toLowerCase();
-        const targetGroupLower = String(targetData.partGroup || '').toLowerCase();
-        const isTargetGeneric = !targetData.partName || targetGroupLower === 'genel mekanik' || targetNameLower.includes('orijinal parça (');
-        if (isTargetGeneric && sourceData.partName && !String(sourceData.partName).toLowerCase().includes('orijinal parça (')) {
+        if (!targetData.partName && sourceData.partName) {
           targetData.partName = sourceData.partName;
-          targetData.partGroup = sourceData.partGroup || targetData.partGroup;
-          targetData.category = sourceData.category || sourceData.partGroup || targetData.category;
-          targetData.vehicleBrand = sourceData.vehicleBrand || sourceData.brand || targetData.vehicleBrand;
-          targetData.compatibleModels = sourceData.compatibleModels || targetData.compatibleModels;
         }
-
+        if (!targetData.partGroup && sourceData.partGroup) {
+          targetData.partGroup = sourceData.partGroup;
+        }
+        if (!targetData.vehicleBrand && (sourceData.vehicleBrand || sourceData.brand)) {
+          targetData.vehicleBrand = sourceData.vehicleBrand || sourceData.brand;
+        }
+        if (!targetData.compatibleModels && sourceData.compatibleModels) {
+          targetData.compatibleModels = sourceData.compatibleModels;
+        }
         if ((!targetData.compatibleVehicles || targetData.compatibleVehicles.length === 0) && Array.isArray(sourceData.compatibleVehicles)) {
           targetData.compatibleVehicles = sourceData.compatibleVehicles;
-        }
-        if ((!targetData.attributes || targetData.attributes.length === 0) && Array.isArray(sourceData.attributes)) {
-          targetData.attributes = sourceData.attributes;
         }
 
         return targetData;
@@ -4000,10 +4199,8 @@
         }
 
         // =========================================================================
-        // 1. STATE TEMİZLİĞİ: 'Sorgula' butonuna tıklandığı anda (fetch işlemi
-        // başlamadan hemen önce) arayüzdeki mevcut görsel dizisi (array) ve önceki
-        // arama sonuçları tamamen sıfırlanır ([] veya null yapılır).
-        // Manuel Görsel Yükle alanı her zaman aktif tutulur.
+        // 1. STATE TEMİZLİĞİ (KURAL 1): 'Sorgula' butonuna tıklandığı anda
+        // mevcut görsel dizisi ve önceki arama sonuçları tamamen sıfırlanır.
         // =========================================================================
         currentCatalogImages = [];
         window.currentEnrichedData = null;
@@ -4025,7 +4222,6 @@
           galleryBadge.style.color = '#0284c7';
         }
 
-        // Arama başladı - önceki görseller tamamen kaldırılır ve temiz yükleniyor rozeti gösterilir
         if (galleryGroup && galleryGrid) {
           galleryGroup.style.display = 'block';
           galleryGrid.innerHTML = `
@@ -4034,12 +4230,11 @@
                 <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
                 <path d="M12 2a10 10 0 0 1 10 10"></path>
               </svg>
-              <span>${isCrossFallback === true ? 'Çapraz OE numarası ile teknik şemalar sorgulanıyor...' : 'Çift yönlü derin çapraz referans ve teknik şemalar sorgulanıyor...'}</span>
+              <span>Canlı OEM & muadil referans ağı, teknik özellikler ve şemalar sorgulanıyor...</span>
             </div>
           `;
         }
 
-        // Önceki arama sonuçlarını ve zengin verileri tamamen sıfırla
         const enrichedBox = document.getElementById('enriched-data-container');
         if (enrichedBox) enrichedBox.style.display = 'none';
         const crossesBox = document.getElementById('preview-cross-references');
@@ -4069,7 +4264,6 @@
           const queryParams = {};
           if (rawBrand) queryParams.brand = rawBrand;
 
-          // Şasi bağlamı varsa parametre olarak ekle
           if (window.currentVehicleContext) {
             const ctx = window.currentVehicleContext;
             if (ctx.vin) queryParams.vin = ctx.vin;
@@ -4079,45 +4273,35 @@
           }
 
           // =========================================================================
-          // AŞAMA 1: ÇİFT YÖNLÜ DERİN SORGU (DEEP CROSS-MATCH)
-          // 1) Girilen kodu doğrudan katalogda sorgula (/catalog/search-oe/{rawOe})
-          // 2) Girilen kod bir Yan Sanayi koduysa (Örn: 'trw gdb1552') veya bir OE
-          //    revizyonuysa (Örn: '7701208122'), bağlı olduğu ana OE ağacını
-          //    (/catalog/cross-reference/{rawOe}) çözüp tüm kardeş yan sanayi
-          //    muadillerini (TRW, AYD, Bosch, Valeo vb.) ve OE revizyonlarını
-          //    (7701208122, 410601241R) tek bir eşdeğerlik havuzunda birleştir.
+          // CANLI API SORGUSU: GET /api/catalog/search-oe/:query
           // =========================================================================
-          const [json, crossTreeData] = await Promise.all([
-            apiFetch(`/catalog/search-oe/${encodeURIComponent(rawOe)}`, {
-              method: 'GET',
-              params: queryParams
-            }),
-            resolveCrossReferenceData(rawOe)
-          ]);
+          const json = await apiFetch(`/catalog/search-oe/${encodeURIComponent(rawOe)}`, {
+            method: 'GET',
+            params: queryParams
+          });
 
-          let data = (json && json.success && json.data) ? json.data : null;
-          if (!data && crossTreeData) {
-            data = { ...crossTreeData };
-          } else if (data && crossTreeData) {
-            mergeDeepCrossTreeData(data, crossTreeData);
-          }
+          const data = extractOeSearchPayload(json);
 
-          // Galeri arayüzü SADECE arama API'sinin yanıtından dönen images veya schemas verisiyle dinamik olarak eşleştirilir
           const schemas = (data && Array.isArray(data.schemas)) ? data.schemas : [];
           const images = (data && Array.isArray(data.images)) ? data.images : [];
           let allItems = schemas.length > 0
             ? [...schemas, ...images.filter(img => !schemas.some(s => (typeof s === 'string' ? s : (s && s.url)) === (typeof img === 'string' ? img : (img && img.url))))]
-            : images;
+            : [...images];
 
           let matchedEquivalentCode = null;
+          const firstFallbackObj = allItems.find(it => typeof it === 'object' && it !== null && it.isFallback === true && it.sourceCode);
+          if (firstFallbackObj) {
+            matchedEquivalentCode = firstFallbackObj.sourceCode;
+          } else if (data && data.schemaSourceCode && normalizeRefCode(data.schemaSourceCode) !== normalizeRefCode(rawOe)) {
+            matchedEquivalentCode = data.schemaSourceCode;
+          }
 
           // =========================================================================
-          // 2. AKILLI GÖRSEL EŞLEŞTİRME & DERİN OE AĞACI GEZİNTİSİ (FALLBACK FETCH):
-          // Kullanıcı bir OE revizyonu ('7701208122') veya Yan Sanayi kodu ('trw gdb1552')
-          // sorguladığında, ana OE numarasını ('410601241R') ve diğer eşdeğer OE'leri
-          // kontrol et; hem eksik kardeş muadilleri ağaca dahil et hem de teknik şemaları getir.
+          // EŞDEĞER OEM GÖRSEL FALLBACK:
+          // Eğer ilk yanıtta görsel dizisi boş geldiyse fakat originalOEMs / rootOEM
+          // içinde farklı bir ana OEM kodu varsa, teknik şemayı o ana OEM kodundan sorgula.
           // =========================================================================
-          if (data) {
+          if (data && allItems.length === 0) {
             const candidateCodes = [];
             const normPrimary = normalizeRefCode(rawOe);
             const pushCandidate = (rawCode) => {
@@ -4130,57 +4314,41 @@
               }
             };
 
-            // Öncelikle bağlı olduğu Ana OE numarasını (primaryOe, örn: 410601241R) adayların en başına koy
-            if (data.primaryOe) {
-              pushCandidate(data.primaryOe);
+            if (data.rootOEM) pushCandidate(data.rootOEM);
+            if (data.primaryOe) pushCandidate(data.primaryOe);
+            if (Array.isArray(data.originalOEMs)) {
+              data.originalOEMs.forEach(item => pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe))));
             }
-
             if (Array.isArray(data.originalCodes)) {
-              data.originalCodes.forEach(item => {
-                pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe)));
-              });
+              data.originalCodes.forEach(item => pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe))));
             }
 
-            if (Array.isArray(data.equivalentOEs)) {
-              data.equivalentOEs.forEach(item => {
-                pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe)));
-              });
-            }
-
-            if (Array.isArray(data.crossReferences)) {
-              data.crossReferences.forEach(item => {
-                pushCandidate(typeof item === 'string' ? item : (item && (item.oeNumber || item.code || item.oe)));
-              });
-            }
-
-            // Eğer görsel henüz bulunamadıysa veya aranan kod bir yan sanayi koduysa, ilk 2 eşdeğer/ana OE için ikincil sorgu yap
-            const needSecondaryFetch = (allItems.length === 0) || Boolean(data.isAftermarketQuery);
-            if (needSecondaryFetch && candidateCodes.length > 0) {
-              const fallbackCodes = candidateCodes.slice(0, 2);
-              for (const eqCode of fallbackCodes) {
+            if (candidateCodes.length > 0) {
+              for (const eqCode of candidateCodes.slice(0, 2)) {
                 try {
                   const eqJson = await apiFetch(`/catalog/search-oe/${encodeURIComponent(eqCode)}`, {
                     method: 'GET',
                     params: queryParams
                   });
-                  const eqData = (eqJson && eqJson.success && eqJson.data) ? eqJson.data : null;
+                  const eqData = extractOeSearchPayload(eqJson);
                   if (eqData) {
-                    // Ana OE ağacındaki kardeş muadilleri ve OE revizyonlarını mevcut veriye birleştir
                     mergeDeepCrossTreeData(data, eqData);
-
                     const eqSchemas = Array.isArray(eqData.schemas) ? eqData.schemas : [];
                     const eqImages = Array.isArray(eqData.images) ? eqData.images : [];
-                    const eqItems = eqSchemas.length > 0
-                      ? [...eqSchemas, ...eqImages.filter(img => !eqSchemas.some(s => (typeof s === 'string' ? s : (s && s.url)) === (typeof img === 'string' ? img : (img && img.url))))]
-                      : eqImages;
-
-                    if (allItems.length === 0 && eqItems.length > 0) {
-                      allItems = eqItems;
-                      matchedEquivalentCode = eqData.oeNumber || eqCode;
-                      if (!data.diagramUrl && eqData.diagramUrl) data.diagramUrl = eqData.diagramUrl;
-                      if ((!data.diagrams || data.diagrams.length === 0) && Array.isArray(eqData.diagrams)) {
-                        data.diagrams = eqData.diagrams;
-                      }
+                    const rawEqItems = eqSchemas.length > 0 ? eqSchemas : eqImages;
+                    if (rawEqItems.length > 0) {
+                      const resolvedSource = eqData.rootOEM || eqData.oeNumber || eqCode;
+                      allItems = rawEqItems.map(imgItem => {
+                        if (typeof imgItem === 'string') {
+                          return { url: imgItem, isFallback: true, sourceCode: resolvedSource };
+                        }
+                        return {
+                          ...imgItem,
+                          isFallback: true,
+                          sourceCode: imgItem.sourceCode || resolvedSource
+                        };
+                      });
+                      matchedEquivalentCode = resolvedSource;
                       break;
                     }
                   }
@@ -4246,23 +4414,20 @@
             }
 
             // =====================================================================
-            // 3. GALERİ & EMPTY STATE (BOŞ YANIT) YÖNETİMİ:
-            // Eşdeğer kodların birinde görsel bulunursa asıl aranan parça için
-            // bulunmuş gibi ekrana yansıtılır ve bilgi notu eklenir.
-            // Hiçbirinde şema yoksa 'Bu parça için teknik şema bulunmamaktadır.' gösterilir.
+            // KURAL 3: AKILLI GÖRSEL GALERİSİ VE ŞEMA SUNUMU (SMART IMAGE RENDERER)
             // =====================================================================
             if (allItems.length > 0) {
               renderCatalogGallery(allItems, true, matchedEquivalentCode);
               const successMsg = matchedEquivalentCode
-                ? `Bu görsel eşdeğer parçadan (${matchedEquivalentCode}) alınmıştır`
-                : ((json && json.message) || 'Parça OE bilgileri, eşdeğer kod ağacı ve teknik şemaları başarıyla getirildi!');
+                ? `Görsel eşdeğer parçadan (${matchedEquivalentCode}) alınmıştır`
+                : ((json && json.message) || 'Parça OEM havuzu, muadil referansları, teknik özellikleri ve şemaları getirildi.');
               showToast(successMsg, 'success');
             } else {
-              renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
-              showToast('Bu parça için teknik şema bulunmamaktadır.', 'warning');
+              renderCatalogEmptyState('Bu parça veya muadilleri için teknik şema bulunmamaktadır.');
+              showToast('Bu parça veya muadilleri için teknik şema bulunmamaktadır.', 'warning');
             }
 
-            // 6. Zengin Verileri ve Çapraz Referans Havuzunu Sakla & Arayüzde Önizle
+            // KURAL 2 & KURAL 4: Çapraz Referans Ağı + Teknik Özellikler Tablosunu Ekrana Bas
             window.currentEnrichedData = data;
             if (typeof renderEnrichedData === 'function') {
               renderEnrichedData(data, rawOe);
@@ -4271,13 +4436,13 @@
             // KRİTİK KURAL: Fiyat ve Stok inputlarına ASLA DOKUNULMAZ!
 
           } else {
-            renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
-            const msg = (json && json.message) || 'Bu parça için teknik şema bulunmamaktadır.';
+            renderCatalogEmptyState('Bu parça veya muadilleri için teknik şema bulunmamaktadır.');
+            const msg = (json && json.message) || 'Bu parça veya muadilleri için teknik şema bulunmamaktadır.';
             showToast(msg, 'warning');
           }
         } catch (err) {
           console.error('[OE_SEARCH_ERROR]:', err);
-          renderCatalogEmptyState('Bu parça için teknik şema bulunmamaktadır.');
+          renderCatalogEmptyState('Bu parça veya muadilleri için teknik şema bulunmamaktadır.');
           showToast('OE sorgusu gerçekleştirilirken bağlantı hatası oluştu.', 'warning');
         } finally {
           ensureManualUploadActive();
@@ -4490,13 +4655,22 @@
             }
 
             if (window.currentEnrichedData) {
-              if (window.currentEnrichedData.crossReferences) {
-                formData.append('crossReferences', JSON.stringify(window.currentEnrichedData.crossReferences));
+              const refList = window.currentEnrichedData.referenceCodes || window.currentEnrichedData.crossReferences;
+              if (refList) {
+                formData.append('referenceCodes', JSON.stringify(refList));
+                formData.append('crossReferences', JSON.stringify(refList));
+              }
+              if (window.currentEnrichedData.originalOEMs) {
+                formData.append('originalOEMs', JSON.stringify(window.currentEnrichedData.originalOEMs));
               }
               if (window.currentEnrichedData.compatibleVehicles) {
                 formData.append('compatibleVehicles', JSON.stringify(window.currentEnrichedData.compatibleVehicles));
               }
-              if (window.currentEnrichedData.attributes) {
+              if (window.currentEnrichedData.technicalSpecs && typeof window.currentEnrichedData.technicalSpecs === 'object') {
+                formData.append('technicalSpecs', JSON.stringify(window.currentEnrichedData.technicalSpecs));
+                const specAttrs = Object.entries(window.currentEnrichedData.technicalSpecs).map(([key, value]) => ({ name: key, value }));
+                formData.append('attributes', JSON.stringify(specAttrs));
+              } else if (window.currentEnrichedData.attributes) {
                 formData.append('attributes', JSON.stringify(window.currentEnrichedData.attributes));
               }
               if (window.currentEnrichedData.diagramUrl) {
