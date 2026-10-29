@@ -1937,8 +1937,22 @@
       if (!tenantSlug) tenantSlug = 'ahmetoto';
     }
 
-    // 2. URL Yapılandırması
-    let url = endpoint;
+    // 2. URL Yapılandırması & OE/VIN Kodu Sanitize() Koruması
+    let normalizedEndpoint = endpoint;
+    if (typeof normalizedEndpoint === 'string' && (normalizedEndpoint.includes('/catalog/search-oe/') || normalizedEndpoint.includes('/catalog/search-vin/'))) {
+      const qIndex = normalizedEndpoint.indexOf('?');
+      const pathPart = qIndex !== -1 ? normalizedEndpoint.slice(0, qIndex) : normalizedEndpoint;
+      const queryPart = qIndex !== -1 ? normalizedEndpoint.slice(qIndex) : '';
+      const segs = pathPart.split('/');
+      const lastSeg = decodeURIComponent(segs[segs.length - 1] || '');
+      const sanitizedSeg = String(lastSeg).trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (sanitizedSeg) {
+        segs[segs.length - 1] = encodeURIComponent(sanitizedSeg);
+        normalizedEndpoint = segs.join('/') + queryPart;
+      }
+    }
+
+    let url = normalizedEndpoint;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       if (!url.startsWith('/api')) {
         url = `${API_BASE}${url.startsWith('/') ? url : '/' + url}`;
