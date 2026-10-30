@@ -267,10 +267,40 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- jwt-decode: Topluluk standardı JWT payload çözümleme kütüphanesi -->
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <!-- Tailwind CSS CDN (Mobile-First Architecture) -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="assets/js/api.js"></script>
 </head>
 
-<body>
+<body class="min-h-screen w-full overflow-x-hidden bg-slate-100 flex flex-col md:flex-row antialiased">
+
+  <!-- MOBİL TOPBAR (Masaüstünde Gizli - Prompt Kural 1 & 5) -->
+  <div class="mobile-topbar md:hidden flex items-center justify-between px-4 py-3 bg-white text-slate-900 sticky top-0 z-40 border-b border-slate-200 w-full shadow-sm">
+    <div class="flex items-center gap-3">
+      <button id="bayi-mobile-toggle" type="button" class="p-2 rounded-lg bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer transition border border-slate-300" aria-label="Menüyü Aç/Kapat" onclick="toggleBayiMobileSidebar()">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </div>
+        <span class="font-bold text-sm tracking-tight text-slate-800">Bayi Portalı</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="store.html" class="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-xs font-semibold border border-emerald-200" title="Vitrin">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </a>
+      <button onclick="logout()" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-xs font-semibold border border-red-200" title="Çıkış Yap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBİL KENAR ÇUBUĞU KARARTMA ARKA PLANI (BACKDROP) -->
+  <div id="bayi-sidebar-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity md:hidden" onclick="toggleBayiMobileSidebar()"></div>
 
   <!-- ==========================================================================
        SOL YAN MENÜ: <aside class="sidebar"> (260px, Beyaz Arkaplan, Sağ Border)
@@ -7080,6 +7110,38 @@
   </div>
 
 
+  <script>
+    // Mobil Kenar Çubuğu Açma / Kapatma (Prompt.md Kural 1 & 5)
+    function toggleBayiMobileSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const backdrop = document.getElementById('bayi-sidebar-backdrop');
+      if (sidebar) {
+        sidebar.classList.toggle('mobile-open');
+        if (backdrop) {
+          if (sidebar.classList.contains('mobile-open')) {
+            backdrop.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+          } else {
+            backdrop.classList.add('hidden');
+            document.body.style.overflow = '';
+          }
+        }
+      }
+    }
+    window.toggleBayiMobileSidebar = toggleBayiMobileSidebar;
+
+    document.querySelectorAll('.sidebar-menu .menu-item a').forEach(function(item) {
+      item.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          const sidebar = document.querySelector('.sidebar');
+          const backdrop = document.getElementById('bayi-sidebar-backdrop');
+          if (sidebar) sidebar.classList.remove('mobile-open');
+          if (backdrop) backdrop.classList.add('hidden');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

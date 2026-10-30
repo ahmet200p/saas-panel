@@ -1908,3 +1908,128 @@ body {
 .swal2-container {
   z-index: 10000 !important;
 }
+
+
+/* ==========================================================================
+   GLOBAL MOBILE-FIRST RESPONSIVE SUITE (PROMPT.MD RULES 1-5)
+   ========================================================================== */
+@media (max-width: 768px) {
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    flex-direction: column !important;
+  }
+
+  /* KURAL 1: Sidebar off-canvas drawer on mobile */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 1000 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    max-width: 85vw !important;
+    width: 280px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  /* KURAL 3: Main content takes full width, no horizontal overflow */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* KURAL 4: Spacing - p-4 (16px) on mobile */
+  .page-view {
+    padding: 16px 12px 32px !important;
+    gap: 16px !important;
+  }
+
+  .top-header {
+    padding: 12px 14px !important;
+    height: auto !important;
+    min-height: auto !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    display: none !important; /* Mobile topbar handles navigation on small screens */
+  }
+
+  .header-left, .header-right {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .header-search {
+    width: 100% !important;
+  }
+
+  .search-input {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  /* KURAL 2: KPI Grid cols-1 on mobile */
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .kpi-card {
+    padding: 16px !important;
+  }
+
+  /* KURAL 1: Section action headers stack */
+  .section-action-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .section-title {
+    font-size: 1.15rem !important;
+  }
+
+  /* KURAL 5: Buttons min-h-[44px] and full-width on mobile */
+  .btn-primary, .btn-secondary, .logout-btn, button[type="submit"] {
+    min-height: 44px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* KURAL 3: Tables wrapped and horizontally scrollable inside container */
+  .table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  table {
+    min-width: 650px !important;
+  }
+
+  /* Filter bars and action groups */
+  .table-actions-bar, .filter-bar, .search-filter-wrapper {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* Drawers and modals responsive width */
+  .modal-dialog, .drawer-container, .modal-content, .drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
