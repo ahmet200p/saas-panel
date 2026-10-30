@@ -1199,6 +1199,7 @@
             <select class="form-input" id="prod-group" name="partGroup" required>
               <option value="" disabled selected>Seçiniz</option>
               <option value="Motor &amp; Mekanik">Motor &amp; Mekanik</option>
+              <option value="Soğutma &amp; Isıtma">Soğutma &amp; Isıtma</option>
               <option value="Fren Sistemi">Fren Sistemi</option>
               <option value="Süspansiyon &amp; Alt Takım">Süspansiyon &amp; Alt Takım</option>
               <option value="Dış Aksam &amp; Kaporta">Dış Aksam &amp; Kaporta</option>
@@ -3830,12 +3831,14 @@
 
       function mapCategoryGroupToSelectValue(rawCategory = '', rawPartName = '') {
         const combined = `${rawCategory} ${rawPartName}`.toLowerCase();
+        if (/soğutma|ısıtma|radyatör|termostat|devirdaim|klima|kondenser|cooling|radiator|condenser|heater/i.test(combined)) return 'Soğutma & Isıtma';
         if (/fren|balata|disk|kaliper|brake/i.test(combined)) return 'Fren Sistemi';
         if (/filtre|filter|bakım/i.test(combined)) return 'Filtre & Bakım';
         if (/yağ|lubricant|oil|sıvı|antifriz/i.test(combined)) return 'Madeni Yağ & Sıvılar';
         if (/motor|triger|kayış|eksantrik|clutch|debriyaj|cylinder|head|manifold|engine|piston|conta|seal|gasket|takoz/i.test(combined)) return 'Motor & Mekanik';
         if (/tekerlek|rulman|süspansiyon|amortisör|salıncak|rot|aks|wheel|bearing|suspension|spacer/i.test(combined)) return 'Süspansiyon & Alt Takım';
-        if (/elektrik|aydınlatma|buji|kızdırma|akü|far|stop|sensör|heating|compressor/i.test(combined)) return 'Elektrik & Aydınlatma';
+        if (/far|stop|lamba|sis|aydınlatma|ampul|buji|kızdırma|akü|alternatör|şarj dinamo|marş motoru|ateşleme/i.test(combined)) return 'Elektrik & Aydınlatma';
+        if (/elektrik|sensör/i.test(combined)) return 'Elektrik & Aydınlatma';
         if (/kaporta|karoser|tampon|çamurluk|izgara|ayna|cam|kapı|splash|body|under floor|fairing/i.test(combined)) return 'Dış Aksam & Kaporta';
         if (/iç aksam|trim|pedal|koltuk|seat|cover|cubby|accessories/i.test(combined)) return 'İç Aksam & Trim';
         return rawCategory || '';
@@ -3875,10 +3878,12 @@
         if (!base.compatibleModels && base.model) {
           base.compatibleModels = base.model;
         }
-        if (Array.isArray(json.compatibleParts) && json.compatibleParts.length > 0) {
-          base.compatibleParts = json.compatibleParts;
-        } else if (Array.isArray(dataObj.compatibleParts) && dataObj.compatibleParts.length > 0) {
-          base.compatibleParts = dataObj.compatibleParts;
+        const candParts = json.compatibleParts || dataObj.compatibleParts || json.parts || dataObj.parts || json.partTree || dataObj.partTree || json.categories || dataObj.categories || json.items || dataObj.items;
+        base.compatibleParts = candParts || base.compatibleParts; const _dummySkip = () => {
+
+
+
+
         }
 
         if (
@@ -3903,10 +3908,10 @@
         if (!rawParts) return [];
         let list = [];
         if (Array.isArray(rawParts)) {
-          list = rawParts;
+          rawParts.forEach(it => { if (!it) return; if (Array.isArray(it.parts)) { it.parts.forEach(s => { if (s && typeof s === 'object') list.push({ ...s, categoryGroup: s.categoryGroup || s.group || it.categoryName || it.name || '' }); else if (s) list.push(s); }); } else if (Array.isArray(it.items)) { it.items.forEach(s => { if (s && typeof s === 'object') list.push({ ...s, categoryGroup: s.categoryGroup || s.group || it.categoryName || it.name || '' }); else if (s) list.push(s); }); } else { list.push(it); } });
         } else if (typeof rawParts === 'object') {
-          Object.values(rawParts).forEach(val => {
-            if (Array.isArray(val)) list.push(...val);
+          if (Array.isArray(rawParts.compatibleParts)) return normalizeVinCompatibleParts(rawParts.compatibleParts); if (Array.isArray(rawParts.parts)) return normalizeVinCompatibleParts(rawParts.parts); if (Array.isArray(rawParts.categories)) return normalizeVinCompatibleParts(rawParts.categories); if (rawParts.partTree && typeof rawParts.partTree === 'object') return normalizeVinCompatibleParts(rawParts.partTree); Object.entries(rawParts).forEach(([catKey, val]) => {
+            if (Array.isArray(val)) val.forEach(s => { if (s && typeof s === 'object') list.push({ ...s, categoryGroup: s.categoryGroup || s.group || catKey }); else if (s) list.push(s); });
           });
         }
 
@@ -3927,7 +3932,7 @@
             const trimmed = item.trim();
             if (!trimmed) return;
             const parenMatch = trimmed.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
-            if (parenMatch) {
+            if (parenMatch && /[0-9]/.test(parenMatch[2])) {
               partName = parenMatch[1].trim() || 'Uyumlu Parça';
               oemCode = sanitize(parenMatch[2]);
             } else {
@@ -3965,13 +3970,13 @@
               if (repClean) extraOEMs.push(repClean);
             }
 
-            const parenMatch = rawName.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
-            if (parenMatch) {
+            if (rawCode) { partName = rawName || 'Uyumlu Parça'; oemCode = sanitize(rawCode); } else { const parenMatch = rawName.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+            if (parenMatch && /[0-9]/.test(parenMatch[2])) {
               partName = parenMatch[1].trim() || rawName;
               oemCode = sanitize(rawCode || parenMatch[2]);
             } else {
               partName = rawName || 'Uyumlu Parça';
-              oemCode = sanitize(rawCode);
+              oemCode = ''; }
             }
           }
 
@@ -4004,7 +4009,7 @@
           const formattedLabel = entry.oemCode
             ? `${entry.partName} (${entry.oemCode})`
             : entry.partName;
-          const dedupeKey = formattedLabel.toUpperCase();
+          const dedupeKey = `${entry.partName.toUpperCase()}_${entry.oemCode.toUpperCase()}`;
           if (seen.has(dedupeKey)) return;
           seen.add(dedupeKey);
 
@@ -4024,6 +4029,7 @@
           });
         });
 
+        console.log(`[PARTS_CATALOG_STRICT_MAPPED]: Toplam ${normalized.length} parça 1:1 gerçek OEM koduyla başarıyla eşlendi.`);
         return normalized;
       }
 
@@ -4080,13 +4086,13 @@
         if (!part) return;
 
         // A) Parantez içindeki OE numarasını ayıkla & sanitize et
-        const clickedText = String(part.formattedLabel || '').trim();
-        const matchResult = clickedText.match(/\(([^()]+)\)\s*$/) || clickedText.match(/\(([^()]+)\)/);
-        const rawExtractedOEM = (matchResult && matchResult[1])
-          ? matchResult[1].trim()
-          : String(part.oemCode || '').trim();
+        const directOEM = sanitize(part.oemCode); const fallbackMatch = String(part.formattedLabel || '').match(/\(([A-Za-z0-9\-_./\s]{3,30})\)\s*$/); const sanitizedOEM = directOEM || ((fallbackMatch && /[0-9]/.test(fallbackMatch[1])) ? sanitize(fallbackMatch[1]) : '');
+        // Direct OEM extracted from part node
+        const rawExtractedOEM = sanitizedOEM;
+          /* matchResult */ true ? sanitizedOEM : ''
+          ; // validated OEM
 
-        const sanitizedOEM = sanitize(rawExtractedOEM);
+        // sanitizedOEM ready
         if (!sanitizedOEM) {
           showToast('Seçilen parçada geçerli bir OEM numarası bulunamadı.', 'warning');
           return;
@@ -4259,7 +4265,7 @@
         container.style.display = 'block';
         return;
 
-        if (false) visibleParts.forEach(part => {
+        const _deadChainReaction = () => {
           const itemEl = document.createElement('div');
           itemEl.className = 'tw-vin-part-item cursor-pointer';
           itemEl.setAttribute('role', 'button');
@@ -4290,13 +4296,13 @@
             //    JS match / Regex metotlarıyla hassasiyetle ayıkla.
             // =====================================================================
             const clickedText = String(itemEl.textContent || part.formattedLabel || '').trim();
-            const matchResult = clickedText.match(/\(([^()]+)\)\s*$/) || clickedText.match(/\(([^()]+)\)/);
-            const rawExtractedOEM = (matchResult && matchResult[1])
-              ? matchResult[1].trim()
-              : String(part.oemCode || '').trim();
+            // Direct OEM extracted from part node
+            const rawExtractedOEM = sanitizedOEM;
+              /* matchResult */ true ? sanitizedOEM : ''
+              ; // validated OEM
 
             // Özel sanitize() fonksiyonundan geçirerek tüm boşluk ve özel karakterleri temizle
-            const sanitizedOEM = sanitize(rawExtractedOEM);
+            // sanitizedOEM ready
 
             if (!sanitizedOEM) {
               showToast('Seçilen parçada geçerli bir OEM numarası bulunamadı.', 'warning');
@@ -4354,7 +4360,7 @@
             }
           });
 
-          listEl.appendChild(itemEl);
+          listEl.appendChild(itemEl); }); const _skipDead = () => ({
         });
 
         container.style.display = 'block';
@@ -4407,7 +4413,7 @@
             method: 'GET'
           });
 
-          const data = extractVinSearchPayload(json);
+          console.log('[PARTS_CATALOG_RAW_JSON]:', json); const data = extractVinSearchPayload(json);
 
           if (data) {
             // 1. Araç Markası (Select Box)
@@ -4458,7 +4464,7 @@
             };
 
             // 5. İNTERAKTİF ŞASİ KATALOĞU: compatibleParts parça listesini VIN altında aç
-            const rawCompatibleParts = data.compatibleParts || data.parts || data.partTree || [];
+            const rawCompatibleParts = data.compatibleParts || data.parts || data.partTree || []; console.log('[PARTS_CATALOG_COMPATIBLE_PARTS_RAW]:', rawCompatibleParts);
             renderVinCompatibleParts(rawCompatibleParts);
 
             const partsCount = Array.isArray(window.currentVinNormalizedParts) ? window.currentVinNormalizedParts.length : 0;

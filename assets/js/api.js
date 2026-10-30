@@ -1914,21 +1914,21 @@
       { name: 'Direksiyon Körük Takımı', code: '7701474448', group: 'Direksiyon Sistemi', oems: ['7701474448'], refs: [{ brand: 'LEMFORDER', code: '3024501' }], specs: { icCap: '14 mm / 50 mm' } },
 
       // 74-88: Soğutma & Isıtma
-      { name: 'Su Radyatörü Alüminyum', code: '214108813R', group: 'Soğutma Sistemi', oems: ['214108813R', '8200735038'], refs: [{ brand: 'VALEO', code: '735180' }, { brand: 'NISSENS', code: '63765' }, { brand: 'NRF', code: '58340' }], specs: { petekGenisligi: '650 mm', petekYuksekligi: '415 mm', kalinlik: '27 mm' } },
-      { name: 'Termostat Gövdeli & Müşürlü', code: '8200561434', group: 'Soğutma Sistemi', oems: ['8200561434', '8200488380', '226300007R'], refs: [{ brand: 'VALEO', code: '820580' }, { brand: 'GATES', code: 'TH37589G1' }, { brand: 'VERNET', code: 'TH6874.89J' }, { brand: 'MAHLE', code: 'TI23489' }], specs: { acilmaSicakligi: '89 °C', govdeTipi: 'Plastik Gövde ve Sıcaklık Müşürü Entegre' } },
-      { name: 'Devirdaim Su Pompası', code: '210100495R', group: 'Soğutma Sistemi', oems: ['210100495R', '7701478031', '8200582675'], refs: [{ brand: 'GATES', code: 'WP0095' }, { brand: 'VALEO', code: '506655' }, { brand: 'SKF', code: 'VKPC86416' }, { brand: 'INA', code: '538006110' }, { brand: 'GRAF', code: 'PA881' }], specs: { tahrikTipi: 'Triger Kayışı Tahrikli', kanatSayisi: '7 Kanat Metal Çark', contaDahil: 'EPDM O-Ring Conta Dahil' }, image: SVG_WATER_PUMP_SCHEMA },
-      { name: 'Kalorifer Radyatörü (Petek)', code: '7701045543', group: 'Soğutma Sistemi', oems: ['7701045543'], refs: [{ brand: 'VALEO', code: '812245' }, { brand: 'NISSENS', code: '73240' }], specs: { malzeme: 'Alüminyum Lehimli' } },
-      { name: 'Radyatör Ek Genleşme Deposu', code: '217104354R', group: 'Soğutma Sistemi', oems: ['217104354R'], refs: [{ brand: 'SASIC', code: '2140025' }], specs: { malzeme: 'Polipropilen Yarı Saydam' } },
-      { name: 'Radyatör Ek Depo Kapağı', code: '7700805131', group: 'Soğutma Sistemi', oems: ['7700805131'], refs: [{ brand: 'GATES', code: 'RC235' }], specs: { acilmaBasinci: '1.4 Bar' } },
-      { name: 'Radyatör Üst Giriş Hortumu', code: '8200508543', group: 'Soğutma Sistemi', oems: ['8200508543'], refs: [{ brand: 'GATES', code: '02-1845' }], specs: { malzeme: 'EPDM Yüksek Isı Kauçuk' } },
-      { name: 'Radyatör Alt Çıkış Hortumu', code: '8200508544', group: 'Soğutma Sistemi', oems: ['8200508544'], refs: [{ brand: 'GATES', code: '02-1846' }], specs: { malzeme: 'EPDM' } },
-      { name: 'Kalorifer Giriş Hortumu', code: '8200508545', group: 'Soğutma Sistemi', oems: ['8200508545'], refs: [{ brand: 'SASIC', code: '3404028' }], specs: { takviye: 'Tekstil Kord Takviyeli' } },
-      { name: 'Radyatör Fan Motoru & Davlumbazı', code: '214810011R', group: 'Soğutma Sistemi', oems: ['214810011R'], refs: [{ brand: 'VALEO', code: '698800' }, { brand: 'NRF', code: '47425' }], specs: { fanKapasitesi: '350W Kademeli Hız' } },
-      { name: 'Klima Kompresörü', code: '926000097R', group: 'Soğutma Sistemi', oems: ['926000097R', '8200848897'], refs: [{ brand: 'VALEO', code: '813245' }, { brand: 'DENSO', code: 'DCP23030' }, { brand: 'NISSENS', code: '89045' }], specs: { kasnakCapi: '125 mm', gazTipi: 'R134a / R1234yf' } },
-      { name: 'Klima Kondenseri (Radyatör)', code: '921000005R', group: 'Soğutma Sistemi', oems: ['921000005R'], refs: [{ brand: 'VALEO', code: '814320' }, { brand: 'NISSENS', code: '940025' }], specs: { kurutucuFiltre: 'Entegre Alüminyum Drier Kartuşlu' } },
-      { name: 'Klima Kurutucu Filtre (Drier)', code: '921310002R', group: 'Soğutma Sistemi', oems: ['921310002R'], refs: [{ brand: 'NRF', code: '33240' }], specs: { malzeme: 'Moleküler Elek Kurutucu' } },
-      { name: 'Klima Basınç Sensörü (Müşür)', code: '8200279259', group: 'Soğutma Sistemi', oems: ['8200279259'], refs: [{ brand: 'VALEO', code: '509650' }], specs: { soket: '3 Pinli M10x1.25' } },
-      { name: 'Kalorifer Fan Motoru Rezistansı', code: '7701207718', group: 'Soğutma Sistemi', oems: ['7701207718'], refs: [{ brand: 'VALEO', code: '509355' }], specs: { klimaTipi: 'Otomatik Dijital Klima Uyumlu' } },
+      { name: 'Su Radyatörü Alüminyum', code: '214108813R', group: 'Soğutma & Isıtma', oems: ['214108813R', '8200735038'], refs: [{ brand: 'VALEO', code: '735180' }, { brand: 'NISSENS', code: '63765' }, { brand: 'NRF', code: '58340' }], specs: { petekGenisligi: '650 mm', petekYuksekligi: '415 mm', kalinlik: '27 mm' } },
+      { name: 'Termostat Gövdeli & Müşürlü', code: '8200561434', group: 'Soğutma & Isıtma', oems: ['8200561434', '8200488380', '226300007R'], refs: [{ brand: 'VALEO', code: '820580' }, { brand: 'GATES', code: 'TH37589G1' }, { brand: 'VERNET', code: 'TH6874.89J' }, { brand: 'MAHLE', code: 'TI23489' }], specs: { acilmaSicakligi: '89 °C', govdeTipi: 'Plastik Gövde ve Sıcaklık Müşürü Entegre' } },
+      { name: 'Devirdaim Su Pompası', code: '210100495R', group: 'Soğutma & Isıtma', oems: ['210100495R', '7701478031', '8200582675'], refs: [{ brand: 'GATES', code: 'WP0095' }, { brand: 'VALEO', code: '506655' }, { brand: 'SKF', code: 'VKPC86416' }, { brand: 'INA', code: '538006110' }, { brand: 'GRAF', code: 'PA881' }], specs: { tahrikTipi: 'Triger Kayışı Tahrikli', kanatSayisi: '7 Kanat Metal Çark', contaDahil: 'EPDM O-Ring Conta Dahil' }, image: SVG_WATER_PUMP_SCHEMA },
+      { name: 'Kalorifer Radyatörü (Petek)', code: '7701045543', group: 'Soğutma & Isıtma', oems: ['7701045543'], refs: [{ brand: 'VALEO', code: '812245' }, { brand: 'NISSENS', code: '73240' }], specs: { malzeme: 'Alüminyum Lehimli' } },
+      { name: 'Radyatör Ek Genleşme Deposu', code: '217104354R', group: 'Soğutma & Isıtma', oems: ['217104354R'], refs: [{ brand: 'SASIC', code: '2140025' }], specs: { malzeme: 'Polipropilen Yarı Saydam' } },
+      { name: 'Radyatör Ek Depo Kapağı', code: '7700805131', group: 'Soğutma & Isıtma', oems: ['7700805131'], refs: [{ brand: 'GATES', code: 'RC235' }], specs: { acilmaBasinci: '1.4 Bar' } },
+      { name: 'Radyatör Üst Giriş Hortumu', code: '8200508543', group: 'Soğutma & Isıtma', oems: ['8200508543'], refs: [{ brand: 'GATES', code: '02-1845' }], specs: { malzeme: 'EPDM Yüksek Isı Kauçuk' } },
+      { name: 'Radyatör Alt Çıkış Hortumu', code: '8200508544', group: 'Soğutma & Isıtma', oems: ['8200508544'], refs: [{ brand: 'GATES', code: '02-1846' }], specs: { malzeme: 'EPDM' } },
+      { name: 'Kalorifer Giriş Hortumu', code: '8200508545', group: 'Soğutma & Isıtma', oems: ['8200508545'], refs: [{ brand: 'SASIC', code: '3404028' }], specs: { takviye: 'Tekstil Kord Takviyeli' } },
+      { name: 'Radyatör Fan Motoru & Davlumbazı', code: '214810011R', group: 'Soğutma & Isıtma', oems: ['214810011R'], refs: [{ brand: 'VALEO', code: '698800' }, { brand: 'NRF', code: '47425' }], specs: { fanKapasitesi: '350W Kademeli Hız' } },
+      { name: 'Klima Kompresörü', code: '926000097R', group: 'Soğutma & Isıtma', oems: ['926000097R', '8200848897'], refs: [{ brand: 'VALEO', code: '813245' }, { brand: 'DENSO', code: 'DCP23030' }, { brand: 'NISSENS', code: '89045' }], specs: { kasnakCapi: '125 mm', gazTipi: 'R134a / R1234yf' } },
+      { name: 'Klima Radyatörü (Kondenser)', code: '921000005R', group: 'Soğutma & Isıtma', oems: ['921000005R', '921006454R', '8200741257'], refs: [{ brand: 'VALEO', code: '814320' }, { brand: 'NISSENS', code: '940025' }, { brand: 'NRF', code: '35865' }], specs: { montajKonumu: 'Ön Panel / Soğutma Modülü', kurutucuFiltre: 'Entegre Alüminyum Drier Kartuşlu', gazTipi: 'R134a / R1234yf' } },
+      { name: 'Klima Kurutucu Filtre (Drier)', code: '921310002R', group: 'Soğutma & Isıtma', oems: ['921310002R'], refs: [{ brand: 'NRF', code: '33240' }], specs: { malzeme: 'Moleküler Elek Kurutucu' } },
+      { name: 'Klima Basınç Sensörü (Müşür)', code: '8200279259', group: 'Soğutma & Isıtma', oems: ['8200279259'], refs: [{ brand: 'VALEO', code: '509650' }], specs: { soket: '3 Pinli M10x1.25' } },
+      { name: 'Kalorifer Fan Motoru Rezistansı', code: '7701207718', group: 'Soğutma & Isıtma', oems: ['7701207718'], refs: [{ brand: 'VALEO', code: '509355' }], specs: { klimaTipi: 'Otomatik Dijital Klima Uyumlu' } },
 
       // 89-107: Dış Aksam & Kaporta (Izgara, Tampon, Çamurluk vb.)
       { name: 'Radyatör Ön Izgara Panjuru', code: '620786522R', group: 'Dış Aksam & Kaporta', oems: ['620786522R', '620780001R', '620783452R'], refs: [{ brand: 'VAN WEZEL', code: '4342510' }, { brand: 'PRASCO', code: 'RN4242001' }, { brand: 'DIEDERICHS', code: '4472040' }, { brand: 'KLOKKERHOLM', code: '6039990' }, { brand: 'BLIC', code: '6502-07-6039990P' }], specs: { montajKonumu: 'Ön Karoser / Tampon Üst Kısım', renk: 'Piyano Siyahı / Parlak Krom Çıtalı', malzeme: 'ABS / PP Darbe Dayanımlı Polimer', klipsUyumu: 'Orijinal Tampon Tırnak Uyumlu' }, image: SVG_GRILLE_SCHEMA },
@@ -2043,28 +2043,33 @@
         for (let i = 0; i < 4835; i++) {
           const base = STATIC_VIN_PARTS_TREE[i % baseCount];
           const partIndex = i + 1;
+          const cleanBaseCode = String(base.code).toUpperCase().replace(/[^A-Z0-9]/g, '');
           const oemCode = (i < baseCount)
-            ? String(base.code).toUpperCase().replace(/[^A-Z0-9]/g, '')
-            : `${String(base.code).slice(0, 5)}${String(partIndex).padStart(5, '0')}`;
+            ? cleanBaseCode
+            : `${cleanBaseCode.slice(0, 5)}${String(partIndex).padStart(5, '0')}`;
           compatibleParts.push({
             partName: (i < baseCount) ? base.name : `${base.name} #${partIndex}`,
             oemCode: oemCode,
             categoryGroup: base.group,
-            originalOEMs: (i < baseCount) ? (base.oems || [base.code]) : [oemCode],
-            referenceCodes: (i < baseCount) ? (base.refs || []) : []
+            originalOEMs: (i < baseCount) ? (base.oems || [cleanBaseCode]) : [oemCode],
+            referenceCodes: (i < baseCount) ? (base.refs || []) : [],
+            technicalSpecs: base.specs || {},
+            image: base.image || null
           });
         }
       } else {
         compatibleParts = STATIC_VIN_PARTS_TREE.map(p => ({
-        partName: p.name,
-        oemCode: String(p.code).toUpperCase().replace(/[^A-Z0-9]/g, ''),
-        categoryGroup: p.group,
-        originalOEMs: p.oems || [p.code],
-        referenceCodes: p.refs || []
+          partName: p.name,
+          oemCode: String(p.code).toUpperCase().replace(/[^A-Z0-9]/g, ''),
+          categoryGroup: p.group,
+          originalOEMs: Array.isArray(p.oems) ? p.oems.map(o => String(o).toUpperCase().replace(/[^A-Z0-9]/g, '')) : [String(p.code).toUpperCase().replace(/[^A-Z0-9]/g, '')],
+          referenceCodes: Array.isArray(p.refs) ? p.refs : [],
+          technicalSpecs: p.specs || {},
+          image: p.image || null
         }));
       }
-      const _vinDummyClose = (({
-      }));
+
+      console.log('[PARTS_CATALOG_MOCK_DISPATCH]:', { vin: rawVin, partsCount: compatibleParts.length });
 
       return {
         success: true,
@@ -2424,6 +2429,10 @@
         } catch {
           data = { message: text };
         }
+      }
+
+      if (url.includes('/catalog/search-vin') || url.includes('/catalog/search-oe')) {
+        console.log('[PARTS_CATALOG_LIVE_RAW_RESPONSE]:', { url, status: response.status, data });
       }
 
       // 400 Bad Request: Eğer tenantId eksikliği kaynaklı hata döndüyse kendi kendini onaran (Self-Healing) yeniden deneme
