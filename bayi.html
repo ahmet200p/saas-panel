@@ -1036,9 +1036,9 @@
           <div class="form-group" style="margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <label class="form-label" for="prod-vin" style="margin-bottom: 0; font-weight: 600;">Şasi (VIN) Numarası</label>
-              <div style="display: flex; align-items: center; gap: 8px;"><select id="bayi-garage-select" onchange="handleBayiGarageSelect(this)" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; border: 1px solid #7dd3fc; background: #f0f9ff; color: #0369a1; font-weight: 700; cursor: pointer;" title="Kayıtlı Müşteri Araçlarından Seç"><option value="">🚗 Garajımdan Seç</option></select><span style="font-size: 0.74rem; color: #0284c7; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                Canlı VIN Doğrulama</span></div><span style="display:none">
+              <span style="font-size: 0.74rem; color: #0284c7; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                Canlı VIN Doğrulama
               </span>
             </div>
             <div style="display: flex; gap: 8px; align-items: stretch;">
@@ -1081,9 +1081,7 @@
                   </svg>
                   <span>Şasiye Uyumlu Parça Ağacı (Tıkla &amp; Sorgula)</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px;"><button type="button" id="btn-bayi-save-garage" onclick="openBayiSaveGarageModal()" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(2,132,199,0.25);" title="Sorgulanan aracı müşteri garajına kaydet">🚗 Garajıma Kaydet</button><span id="vin-compatible-parts-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700" style="border: 1px solid #93c5fd;">
-                  0 Parça</span></div><span style="display:none">
-                </span>
+                <span id="vin-compatible-parts-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700" style="border: 1px solid #93c5fd;">0 Parça</span>
               </div>
               <div style="margin-bottom: 8px;">
                 <input type="text" id="vin-parts-filter-input" class="form-input" placeholder="Parça adı veya OEM kodu filtrele (Örn: Triger, Balata, 130C15339R)..." style="padding: 6px 10px; font-size: 0.76rem; border-radius: 6px; border: 1px solid #93c5fd; background: #ffffff;">
@@ -1264,16 +1262,16 @@
             <div id="enriched-specs-section" style="display: none; margin-bottom: 14px;">
               <span style="font-size: 0.76rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.4px; display: flex; align-items: center; gap: 5px; margin-bottom: 6px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                <span>Teknik Özellikler</span><span id="bayi-labor-time-badge" style="display: none; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-weight: 700; margin-left: auto; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span id="bayi-labor-time-text">Tahmini İşçilik: 2 Saat</span></span>
+                <span>Teknik Özellikler</span>
               </span>
               <div id="preview-attributes-table" class="tw-specs-table-wrap">
                 <!-- API'den gelen technicalSpecs objesi Object.entries ile dinamik tablo olarak buraya basılır -->
               </div>
             </div>
 
-            <!-- USTA TAVSİYESİ (BİRLİKTE ALINANLAR / BAKIM KİTİ) ÇAPRAZ SATIŞ MODÜLÜ (Prompt Modül 2) -->
-            <div id="bayi-recommended-kit-section" style="display: none; margin-bottom: 14px; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; border-radius: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.08);">
-              <!-- renderBayiRecommendedKit() ile dinamik doldurulur -->
+
+
+-->
             </div>
 
             <!-- Uyumlu Araçlar (Fitment) Önizleme -->
@@ -4789,273 +4787,13 @@
           if (fitmentBox) fitmentBox.innerHTML = '';
         }
 
-        /* Eski konteyner kontrolü temizlendi
-          container.style.display = 'none';
-        } else {
-          container.style.display = 'block';
-        }
-      }
-        */ // 3. TAHMİNİ İŞÇİLİK SÜRESİ ROZETİ (LABOR TIME BADGE - PROMPT MODÜL 3)
-        // Eğer estimatedLaborTime boşsa (null/undefined/boş string), rozeti gizle (conditional rendering)
-        const laborBadge = document.getElementById('bayi-labor-time-badge');
-        const laborText = document.getElementById('bayi-labor-time-text');
-        if (laborBadge) {
-          const hasLaborTime = Boolean(
-            data &&
-            data.estimatedLaborTime &&
-            String(data.estimatedLaborTime).trim() !== '' &&
-            String(data.estimatedLaborTime).toLowerCase() !== 'null'
-          );
-          if (hasLaborTime) {
-            laborBadge.style.display = 'inline-flex';
-            if (laborText) {
-              laborText.textContent = `Tahmini İşçilik: ${data.estimatedLaborTime}`;
-            }
-          } else {
-            laborBadge.style.display = 'none';
-          }
-        }
-
-        // 2. ÇAPRAZ SATIŞ (BAKIM KİTİ) TASARIMI (PROMPT MODÜL 2)
-        const kitSection = document.getElementById('bayi-recommended-kit-section');
-        const hasRecommended = Boolean(data && Array.isArray(data.recommendedTogether) && data.recommendedTogether.length > 0);
-        if (kitSection) {
-          if (hasRecommended) {
-            renderBayiRecommendedKit(data.recommendedTogether, data.partName || '');
-            kitSection.style.display = 'block';
-          } else {
-            kitSection.style.display = 'none';
-            kitSection.innerHTML = '';
-          }
-        }
-
-        if (specEntries.length === 0 && fitments.length === 0 && !hasRecommended) {
+        if (specEntries.length === 0 && fitments.length === 0) {
           container.style.display = 'none';
         } else {
           container.style.display = 'block';
         }
       }
       window.renderEnrichedData = renderEnrichedData;
-
-      // =========================================================================
-      // 2. ÇAPRAZ SATIŞ (BAKIM KİTİ) MOTORU (PROMPT MODÜL 2)
-      // =========================================================================
-      function renderBayiRecommendedKit(items, mainPartName) {
-        const kitSection = document.getElementById('bayi-recommended-kit-section');
-        if (!kitSection) return;
-        if (!Array.isArray(items) || items.length === 0) {
-          kitSection.style.display = 'none';
-          kitSection.innerHTML = '';
-          return;
-        }
-
-        const totalEstimated = items.reduce((sum, it) => sum + (parseFloat(it.discountedPrice || it.unitPrice || it.defaultPrice) || 0), 0);
-
-        kitSection.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.25rem;">💡</span>
-                <div>
-                  <div style="font-size: 0.82rem; font-weight: 800; color: #92400e; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <span>Usta Tavsiyesi: Bu parçayı alanlar genellikle şunları da değiştirdi</span>
-                    ${mainPartName ? `<span style="font-size: 0.68rem; background: #fef3c7; border: 1px solid #fde68a; color: #b45309; padding: 1px 6px; border-radius: 4px; font-weight: 700;">${escapeHtml(mainPartName)}</span>` : ''}
-                  </div>
-                  <div style="font-size: 0.72rem; color: #78350f; font-weight: 500;">
-                    Aracın bakım standartları gereği tek seferde değişim önerilen OEM bakım seti
-                  </div>
-                </div>
-              </div>
-              <button type="button" onclick="applyAllBayiRecommendedKit()" class="min-h-[44px]" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 14px; background: #d97706; color: #ffffff; border: none; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px rgba(217,119,6,0.3); transition: background 0.15s; white-space: nowrap;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                <span>Tüm Bakım Setini Seç (${items.length} Parça • ~${totalEstimated.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺)</span>
-              </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 4px;">
-              ${items.map(it => {
-                const price = parseFloat(it.discountedPrice || it.unitPrice || it.defaultPrice || 0);
-                return `
-                  <div style="background: #ffffff; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-                    <div>
-                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-bottom: 4px; flex-wrap: wrap;">
-                        <span style="font-family: monospace; font-size: 0.7rem; font-weight: 700; color: #b45309; background: #fffbeb; padding: 1px 5px; border-radius: 4px; border: 1px solid #fef3c7;">
-                          OE: ${escapeHtml(it.oeCode)}
-                        </span>
-                        ${it.laborTime ? `<span style="font-size: 0.68rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 1px 5px; border-radius: 4px; border: 1px solid #bfdbfe;">⏱ ${escapeHtml(it.laborTime)}</span>` : ''}
-                      </div>
-                      <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a; line-height: 1.25; margin-bottom: 4px;">
-                        ${escapeHtml(it.name)}
-                      </div>
-                      ${it.reason ? `<div style="font-size: 0.68rem; color: #64748b; margin-bottom: 6px; line-height: 1.2;">${escapeHtml(it.reason)}</div>` : ''}
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 6px; margin-top: 4px;">
-                      <span style="font-size: 0.82rem; font-weight: 800; color: #0f172a;">${price > 0 ? price.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺' : 'Fiyat Belirtilmemiş'}</span>
-                      <button type="button" onclick="selectBayiRecommendedOe('${escapeHtml(it.oeCode)}')" class="min-h-[44px]" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s;">
-                        <span>OE Sorgula →</span>
-                      </button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-      window.renderBayiRecommendedKit = renderBayiRecommendedKit;
-
-      window.selectBayiRecommendedOe = async function(oeCode) {
-        if (!oeCode) return;
-        const oeInput = document.getElementById('prod-oe');
-        if (oeInput) {
-          oeInput.value = oeCode;
-          if (typeof fetchOEMData === 'function') {
-            await fetchOEMData();
-          } else if (typeof handleOeSearch === 'function') {
-            await handleOeSearch();
-          }
-        }
-      };
-
-      window.applyAllBayiRecommendedKit = function() {
-        if (!window.currentEnrichedData || !Array.isArray(window.currentEnrichedData.recommendedTogether)) return;
-        const recs = window.currentEnrichedData.recommendedTogether;
-        const codes = recs.map(r => `${r.name} (OE: ${r.oeCode})`).join('\n• ');
-        if (typeof Swal !== 'undefined') {
-          Swal.fire({
-            icon: 'info',
-            title: 'Bakım Kiti Parçaları',
-            html: `<div style="text-align: left; font-size: 13px; line-height: 1.5; color: #334155;">Bu bakım setindeki parçalar:<br><br>• <strong>${codes}</strong><br><br><span style="color:#64748b; font-size: 12px;">Parça kartlarındaki "OE Sorgula" butonuna basarak tek tek parça özelliklerini ve OEM referanslarını anında sorgulayabilirsiniz.</span></div>`,
-            confirmButtonColor: '#d97706',
-            confirmButtonText: 'Tamam'
-          });
-        } else {
-          showToast(`Bakım setindeki ${recs.length} parça listelendi.`);
-        }
-      };
-
-      // =========================================================================
-      // 1. AKILLI GARAJ (MY GARAGE) YÖNETİMİ (PROMPT MODÜL 1)
-      // =========================================================================
-      async function loadBayiGarageVehicles() {
-        const select = document.getElementById('bayi-garage-select');
-        if (!select) return;
-        try {
-          const res = await apiFetch('/garage/vehicles');
-          if (res && res.success && Array.isArray(res.data)) {
-            select.innerHTML = '<option value="">🚗 Garajımdan Seç</option>' +
-              res.data.map(v => `
-                <option value="${escapeHtml(v.vin)}" data-plate="${escapeHtml(v.plateNumber)}" data-name="${escapeHtml(v.customerName)}" data-model="${escapeHtml(v.vehicleModel)}">
-                  ${escapeHtml(v.plateNumber)} - ${escapeHtml(v.customerName)} (${escapeHtml(v.vehicleModel || 'Araç')})
-                </option>
-              `).join('');
-          }
-        } catch (err) {
-          console.error('[LOAD_BAYI_GARAGE_ERROR]:', err);
-        }
-      }
-      window.loadBayiGarageVehicles = loadBayiGarageVehicles;
-
-      window.handleBayiGarageSelect = function(selectEl) {
-        if (!selectEl || !selectEl.value) return;
-        const vinInput = document.getElementById('prod-vin');
-        if (vinInput) {
-          vinInput.value = selectEl.value;
-          if (typeof handleVinSearch === 'function') {
-            handleVinSearch();
-          }
-        }
-      };
-
-      window.openBayiSaveGarageModal = function() {
-        const vinInput = document.getElementById('prod-vin');
-        const rawVin = (vinInput ? vinInput.value.trim() : '') || (window.currentVehicleContext ? window.currentVehicleContext.vin : '');
-        const vehicleModel = (window.currentVehicleContext ? ([window.currentVehicleContext.vehicleBrand, window.currentVehicleContext.compatibleModels].filter(Boolean).join(' ')) : '') || 'Binek Araç';
-
-        if (!rawVin) {
-          showToast('Lütfen önce bir Şasi (VIN) numarası girip sorgulama yapınız.', 'warning');
-          if (vinInput) vinInput.focus();
-          return;
-        }
-
-        const modal = document.getElementById('modal-bayi-save-garage');
-        const vinField = document.getElementById('bayi-modal-garage-vin');
-        const modelField = document.getElementById('bayi-modal-garage-model');
-        const nameField = document.getElementById('bayi-modal-garage-name');
-        const plateField = document.getElementById('bayi-modal-garage-plate');
-
-        if (vinField) vinField.value = rawVin.toUpperCase();
-        if (modelField) modelField.value = vehicleModel;
-        if (nameField) nameField.value = '';
-        if (plateField) plateField.value = '';
-
-        if (modal) {
-          modal.style.display = 'flex';
-          setTimeout(() => {
-            if (nameField) nameField.focus();
-          }, 150);
-        }
-      };
-
-      window.closeBayiSaveGarageModal = function() {
-        const modal = document.getElementById('modal-bayi-save-garage');
-        if (modal) modal.style.display = 'none';
-      };
-
-      window.submitBayiSaveGarage = async function(e) {
-        if (e && e.preventDefault) e.preventDefault();
-        const nameInput = document.getElementById('bayi-modal-garage-name');
-        const plateInput = document.getElementById('bayi-modal-garage-plate');
-        const vinInput = document.getElementById('bayi-modal-garage-vin');
-        const modelInput = document.getElementById('bayi-modal-garage-model');
-
-        const customerName = nameInput ? nameInput.value.trim() : '';
-        const plateNumber = plateInput ? plateInput.value.trim().toUpperCase() : '';
-        const vin = vinInput ? vinInput.value.trim().toUpperCase() : '';
-        const vehicleModel = modelInput ? modelInput.value.trim() : '';
-
-        if (!customerName || !plateNumber) {
-          showToast('Müşteri Adı ve Araç Plakası zorunludur.', 'warning');
-          return;
-        }
-
-        const btnSubmit = document.getElementById('btn-bayi-modal-garage-submit');
-        const origText = btnSubmit ? btnSubmit.innerHTML : '';
-        if (btnSubmit) {
-          btnSubmit.disabled = true;
-          btnSubmit.innerHTML = 'Kaydediliyor...';
-        }
-
-        try {
-          const res = await apiFetch('/garage/vehicles', {
-            method: 'POST',
-            body: {
-              customerName,
-              plateNumber,
-              vin,
-              vehicleModel
-            }
-          });
-
-          if (res && res.success) {
-            showToast(`"${plateNumber}" plakalı araç Akıllı Garajınıza kaydedildi! ✓`, 'success');
-            closeBayiSaveGarageModal();
-            await loadBayiGarageVehicles();
-            const select = document.getElementById('bayi-garage-select');
-            if (select) select.value = vin;
-          } else {
-            showToast((res && res.message) ? res.message : 'Araç garaja kaydedilemedi.', 'danger');
-          }
-        } catch (err) {
-          console.error('[SUBMIT_GARAGE_ERROR]:', err);
-          showToast('Kayıt hatası: ' + err.message, 'danger');
-        } finally {
-          if (btnSubmit) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = origText;
-          }
-        }
-      };
 
       const btnSearchOe = document.getElementById('btn-search-oe');
       const inputProdOe = document.getElementById('prod-oe');
@@ -6960,7 +6698,7 @@
         loadCatalog();
         loadDashboard();
         loadDiscountsTab();
-        loadBayiGarageVehicles();
+
       });
 
       // Üst Genel Arama Çubuğu
@@ -7276,65 +7014,6 @@
         <button type="button" class="btn-cancel" id="btn-cancel-order-modal">Kapat</button>
       </div>
     </div>
-  </div>
-
-
-  <!-- ==========================================================================
-       AKILLI GARAJ (MY GARAJ) ARAÇ KAYDET MODALI (Prompt Modül 1)
-       ========================================================================== -->
-  <div class="modal-overlay" id="modal-bayi-save-garage" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 16px;" aria-hidden="true">
-    <div class="modal-container" style="max-width: 500px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; background: #ffffff; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #cbd5e1;">
-      <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-        <div class="modal-title-group" style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-            🚗
-          </div>
-          <div>
-            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a;">Aracı Garajıma Kaydet</h3>
-            <p style="margin: 2px 0 0; font-size: 0.78rem; color: #64748b;">Müşteri ve şasi bilgilerini hızlı sorgulama için garaja ekleyin</p>
-          </div>
-        </div>
-        <button type="button" id="btn-close-bayi-garage-modal" onclick="closeBayiSaveGarageModal()" aria-label="Kapat" style="background: none; border: none; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 4px;">&times;</button>
-      </div>
-
-      <form id="form-bayi-save-garage" onsubmit="submitBayiSaveGarage(event)" style="display: flex; flex-direction: column; flex: 1; margin: 0;">
-        <div class="modal-body" style="padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label" for="bayi-modal-garage-name" style="font-weight: 700; font-size: 0.82rem; color: #1e293b; margin-bottom: 5px; display: block;">
-              Müşteri / Servis Adı <span style="color: #ef4444;">*</span>
-            </label>
-            <input type="text" id="bayi-modal-garage-name" class="form-input min-h-[44px]" placeholder="Örn: Ahmet Usta / Demir Otomotiv" required style="width: 100%; border-radius: 8px; border: 1.5px solid #cbd5e1; padding: 8px 12px; font-size: 0.86rem;">
-          </div>
-
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label" for="bayi-modal-garage-plate" style="font-weight: 700; font-size: 0.82rem; color: #1e293b; margin-bottom: 5px; display: block;">
-              Araç Plakası <span style="color: #ef4444;">*</span>
-            </label>
-            <input type="text" id="bayi-modal-garage-plate" class="form-input min-h-[44px]" placeholder="Örn: 34 KL 4821" required style="width: 100%; text-transform: uppercase; font-family: monospace; font-weight: 700; border-radius: 8px; border: 1.5px solid #cbd5e1; padding: 8px 12px; font-size: 0.86rem; letter-spacing: 0.5px;">
-          </div>
-
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label" for="bayi-modal-garage-vin" style="font-weight: 700; font-size: 0.82rem; color: #475569; margin-bottom: 5px; display: block;">
-              Şasi No (VIN)
-            </label>
-            <input type="text" id="bayi-modal-garage-vin" class="form-input min-h-[44px]" readonly style="width: 100%; font-family: monospace; font-weight: 700; background: #f1f5f9; color: #334155; border-radius: 8px; border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 0.86rem; letter-spacing: 0.5px;">
-          </div>
-
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label" for="bayi-modal-garage-model" style="font-weight: 700; font-size: 0.82rem; color: #475569; margin-bottom: 5px; display: block;">
-              Araç Modeli
-            </label>
-            <input type="text" id="bayi-modal-garage-model" class="form-input min-h-[44px]" readonly style="width: 100%; background: #f1f5f9; color: #334155; border-radius: 8px; border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 0.86rem; font-weight: 600;">
-          </div>
-        </div>
-
-        <div class="modal-footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;">
-          <button type="button" class="btn-cancel min-h-[44px]" onclick="closeBayiSaveGarageModal()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-weight: 700; font-size: 0.82rem; cursor: pointer;">Vazgeç</button>
-          <button type="submit" id="btn-bayi-modal-garage-submit" class="btn-primary min-h-[44px]" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 8px; border: none; background: #0284c7; color: #ffffff; font-weight: 700; font-size: 0.82rem; cursor: pointer; box-shadow: 0 2px 6px rgba(2,132,199,0.3);">🚗 Garajıma Kaydet</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <script>
     // Mobil Kenar Çubuğu Açma / Kapatma (Prompt.md Kural 1 & 5)
