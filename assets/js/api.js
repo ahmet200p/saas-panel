@@ -17,7 +17,11 @@
   'use strict';
 
   // Sunucu Adresi Yapılandırması (Headless Mimari prompt.md gereği doğrudan absolute URL):
-  const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api';
+  const API_BASE = (typeof API_BASE_URL !== 'undefined')
+    ? API_BASE_URL
+    : ((typeof window !== 'undefined' && (window.API_BASE_URL || window.API_BASE))
+      ? (window.API_BASE_URL || window.API_BASE)
+      : 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api');
   const isDirectExpress = false;
 
   // ----------------------------------------------------------------------------
@@ -166,6 +170,56 @@
 
     if (!store.discountRules) {
       store.discountRules = [];
+      saveMockStore(store);
+    }
+
+    if (!Array.isArray(store.favorites)) {
+      store.favorites = ['tp-seed-1', 'tp-seed-2'];
+      saveMockStore(store);
+    }
+
+    if (!Array.isArray(store.notifications) || store.notifications.length === 0) {
+      store.notifications = [
+        {
+          id: 'notif-seed-1',
+          type: 'STOCK_ALERT',
+          category: 'stock',
+          title: '⚠️ Kritik Stok Uyarısı',
+          message: "Favorilerinizdeki 'Triger Kayış Kiti & Gergi Rulmanı' stokları tükenmek üzere! Kalan stok: 3 adet.",
+          productId: 'tp-seed-1',
+          isRead: false,
+          createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
+        },
+        {
+          id: 'notif-seed-2',
+          type: 'PRICE_DROP',
+          category: 'price',
+          title: '📉 Fiyat Düşüşü Müjdesi',
+          message: "Beklediğiniz 'Ön Fren Balata Takımı' ürününde %15 özel bayi indirimi başladı!",
+          productId: 'tp-seed-2',
+          isRead: false,
+          createdAt: new Date(Date.now() - 1000 * 60 * 65).toISOString()
+        },
+        {
+          id: 'notif-seed-3',
+          type: 'SHIPMENT',
+          category: 'shipping',
+          title: '🚚 Siparişiniz Yola Çıktı',
+          message: "Siparişiniz #SP-9481 kargoya teslim edildi. Kargo Takip: YK-88492019 (Yurtiçi Kargo).",
+          trackingNumber: 'YK-88492019',
+          isRead: true,
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString()
+        },
+        {
+          id: 'notif-seed-4',
+          type: 'ADMIN_MESSAGE',
+          category: 'message',
+          title: '💬 Yetkili Satıcı Mesajı',
+          message: "Ahmet Oto: 'Kasım ayı VAG grubu orijinal disk ve balatalarda ekstra %10 B2B iskonto avantajı tanımlandı.'",
+          isRead: false,
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString()
+        }
+      ];
       saveMockStore(store);
     }
 
@@ -1134,11 +1188,26 @@
 
     // 7. GET /tenant/catalog & GET /tenant/products
     if ((cleanEndpoint === '/tenant/catalog' || cleanEndpoint === '/tenant/products') && method === 'GET') {
+      const activeTenant = (store.tenants && store.tenants[0]) || { name: 'Ahmet Oto (Yetkili Bayi)' };
+      const currentDealerName = activeTenant.name || 'Ahmet Oto (Yetkili Bayi)';
       const items = store.tenantCatalog.map(tc => {
         const prod = store.products.find(p => p.id === tc.productId) || {};
         return {
           ...tc,
-          product: prod
+          product: prod,
+          dealerName: currentDealerName,
+          tenantName: currentDealerName,
+          companyName: currentDealerName,
+          sellerName: currentDealerName,
+          user: {
+            companyName: currentDealerName,
+            name: 'Ahmet Yılmaz'
+          },
+          tenant: {
+            id: activeTenant.id || 'tenant-ahmet-oto',
+            name: currentDealerName,
+            subdomain: activeTenant.subdomain || 'ahmetoto'
+          }
         };
       });
       return {
@@ -1558,27 +1627,54 @@
     }
 
     // 9. GET /store/products
-    if (cleanEndpoint === '/store/products' && method === 'GET') {
+    if ((cleanEndpoint === '/store/products' || cleanEndpoint === '/products') && method === 'GET') {
       const firstCust = (store.customers && store.customers[0]) || null;
       const discountRate = (firstCust && firstCust.discountRate !== undefined && firstCust.discountRate !== null && !isNaN(parseFloat(firstCust.discountRate)))
         ? Math.max(0, parseFloat(firstCust.discountRate))
         : 0;
       const multiplier = Math.max(0, (100 - discountRate) / 100);
 
-      // Parse query params if any
+      // Parse query params if any (prompt.md Faceted Search Mimarisi)
       let brandFilter = '';
+      let brandsFilter = [];
       let searchFilter = '';
+      let categoryFilter = '';
+      let subcategoriesFilter = [];
+      let conditionsFilter = [];
+      let citiesFilter = [];
+      let minPrice = null;
+      let maxPrice = null;
       try {
         const parsedUrl = new URL(endpoint, 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com');
         brandFilter = (parsedUrl.searchParams.get('brand') || '').trim().toLowerCase();
-        searchFilter = (parsedUrl.searchParams.get('search') || '').trim().toLowerCase();
+        const bParam = parsedUrl.searchParams.get('brands');
+        if (bParam) brandsFilter = bParam.split(',').map(b => b.trim().toLowerCase()).filter(Boolean);
+        searchFilter = (parsedUrl.searchParams.get('search') || parsedUrl.searchParams.get('q') || '').trim().toLowerCase();
+        categoryFilter = (parsedUrl.searchParams.get('category') || '').trim();
+        const subParam = parsedUrl.searchParams.get('subcategories');
+        if (subParam) subcategoriesFilter = subParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const condParam = parsedUrl.searchParams.get('conditions');
+        if (condParam) conditionsFilter = condParam.split(',').map(c => c.trim().toLowerCase()).filter(Boolean);
+        const cityParam = parsedUrl.searchParams.get('cities');
+        if (cityParam) citiesFilter = cityParam.split(',').map(c => c.trim().toLowerCase()).filter(Boolean);
+        const minP = parseFloat(parsedUrl.searchParams.get('minPrice'));
+        if (!isNaN(minP)) minPrice = minP;
+        const maxP = parseFloat(parsedUrl.searchParams.get('maxPrice'));
+        if (!isNaN(maxP)) maxPrice = maxP;
       } catch (e) {}
+
+      const activeTenant = (store.tenants && store.tenants[0]) || { name: 'Ahmet Oto (Yetkili Bayi)' };
+      const currentDealerName = activeTenant.name || 'Ahmet Oto (Yetkili Bayi)';
 
       let calculated = (store.tenantCatalog || []).map(tc => {
         const prod = (store.products || []).find(p => p.id === tc.productId) || {};
         const listPrice = tc.customPrice !== null && tc.customPrice !== undefined ? tc.customPrice : (prod.defaultPrice || 0);
         const discountAmount = discountRate > 0 ? listPrice * (discountRate / 100) : 0;
         const finalPrice = discountRate > 0 ? parseFloat((listPrice - discountAmount).toFixed(2)) : listPrice;
+        
+        const itemTenant = (store.tenants || []).find(t => t.id === tc.tenantId) || activeTenant;
+        const itemDealerName = (itemTenant && itemTenant.name) || currentDealerName;
+
         return {
           tenantProductId: tc.id,
           productId: prod.id,
@@ -1596,6 +1692,22 @@
           customPrice: tc.customPrice,
           discountedPrice: finalPrice,
           appliedDiscountRate: discountRate,
+          dealerName: itemDealerName,
+          tenantName: itemDealerName,
+          companyName: itemDealerName,
+          sellerName: itemDealerName,
+          user: {
+            companyName: itemDealerName,
+            name: (itemTenant && itemTenant.name) || 'Ahmet Yılmaz'
+          },
+          tenant: {
+            id: (itemTenant && itemTenant.id) || 'tenant-ahmet-oto',
+            name: itemDealerName,
+            subdomain: (itemTenant && itemTenant.subdomain) || 'ahmetoto'
+          },
+          sellerRating: '4.9',
+          sellerSales: 348,
+          city: (itemTenant && itemTenant.city) || 'İstanbul (İkitelli)',
           estimatedLaborTime: prod.estimatedLaborTime !== undefined ? prod.estimatedLaborTime : getRecommendedTogetherAndLabor(prod.name, prod.partGroup || prod.category, prod.oeNumber).estimatedLaborTime,
           recommendedTogether: Array.isArray(prod.recommendedTogether) ? prod.recommendedTogether : getRecommendedTogetherAndLabor(prod.name, prod.partGroup || prod.category, prod.oeNumber).recommendedTogether,
           pricing: {
@@ -1723,6 +1835,22 @@
             customPrice: listP,
             discountedPrice: finP,
             appliedDiscountRate: discountRate,
+            dealerName: currentDealerName,
+            tenantName: currentDealerName,
+            companyName: currentDealerName,
+            sellerName: currentDealerName,
+            user: {
+              companyName: currentDealerName,
+              name: 'Ahmet Yılmaz'
+            },
+            tenant: {
+              id: activeTenant.id || 'tenant-ahmet-oto',
+              name: currentDealerName,
+              subdomain: activeTenant.subdomain || 'ahmetoto'
+            },
+            sellerRating: '4.9',
+            sellerSales: 120 + ((sIdx * 27) % 250),
+            city: 'İstanbul (İkitelli)',
             pricing: {
               listPrice: listP,
               discountRate: discountRate,
@@ -1735,8 +1863,75 @@
         });
       }
 
-      if (brandFilter && brandFilter !== 'all') {
-        calculated = calculated.filter(p => (p.vehicleBrand || '').toLowerCase().includes(brandFilter));
+      // prompt.md Adım 3: Kategori Filtreleme
+      if (categoryFilter && categoryFilter !== 'Tüm Kategoriler' && categoryFilter.toLowerCase() !== 'all') {
+        const cLower = categoryFilter.toLowerCase();
+        calculated = calculated.filter(p => {
+          const cat = (p.category || '').toLowerCase();
+          const grp = (p.partGroup || '').toLowerCase();
+          const nm = (p.name || '').toLowerCase();
+          
+          if (cat.includes(cLower) || grp.includes(cLower) || nm.includes(cLower)) return true;
+          if (cLower.includes('motor') && (cat.includes('motor') || grp.includes('motor') || nm.includes('triger') || nm.includes('bobin'))) return true;
+          if (cLower.includes('fren') && (cat.includes('fren') || grp.includes('fren') || nm.includes('balata') || nm.includes('disk') || nm.includes('kaliper'))) return true;
+          if (cLower.includes('filtre') && (cat.includes('filtre') || grp.includes('filtre') || nm.includes('filtre'))) return true;
+          if (cLower.includes('süspansiyon') && (cat.includes('süspansiyon') || grp.includes('süspansiyon') || nm.includes('amortisör') || grp.includes('direksiyon'))) return true;
+          if (cLower.includes('elektrik') && (cat.includes('elektrik') || grp.includes('elektrik') || nm.includes('aydınlatma') || nm.includes('far') || nm.includes('sensör'))) return true;
+          if (cLower.includes('kaporta') && (cat.includes('kaporta') || grp.includes('kaporta') || nm.includes('tampon') || nm.includes('ızgara') || nm.includes('karoser'))) return true;
+          if (cLower.includes('yağ') && (cat.includes('yağ') || grp.includes('yağ') || nm.includes('madeni') || nm.includes('antifriz'))) return true;
+          return false;
+        });
+      }
+
+      // Çoklu Marka Filtreleme (brands=Bosch,Brembo veya brand=...)
+      if (brandsFilter.length > 0) {
+        calculated = calculated.filter(p => {
+          const b = (p.brand || p.vehicleBrand || '').toLowerCase();
+          const nm = (p.name || '').toLowerCase();
+          return brandsFilter.some(bf => b.includes(bf) || nm.includes(bf));
+        });
+      } else if (brandFilter && brandFilter !== 'all') {
+        calculated = calculated.filter(p => (p.vehicleBrand || p.brand || '').toLowerCase().includes(brandFilter));
+      }
+
+      // Alt Kategori Filtreleme (subcategories=Ön Fren Diski)
+      if (subcategoriesFilter.length > 0) {
+        calculated = calculated.filter(p => {
+          const nm = (p.name || '').toLowerCase();
+          const pg = (p.partGroup || '').toLowerCase();
+          const cat = (p.category || '').toLowerCase();
+          return subcategoriesFilter.some(sub => nm.includes(sub) || pg.includes(sub) || cat.includes(sub));
+        });
+      }
+
+      // Ürün Durumu Filtreleme (conditions=Sıfır,Muadil,Çıkma)
+      if (conditionsFilter.length > 0) {
+        calculated = calculated.filter(p => {
+          const nm = (p.name || '').toLowerCase();
+          return conditionsFilter.some(c => {
+            if (c.includes('sıfır') || c.includes('oem')) return !p.isDiscounted || nm.includes('oem') || nm.includes('sıfır');
+            if (c.includes('muadil') || c.includes('kalite')) return p.isDiscounted || nm.includes('muadil');
+            if (c.includes('çıkma') || c.includes('revize')) return nm.includes('revize') || nm.includes('çıkma');
+            return true;
+          });
+        });
+      }
+
+      // Fiyat Aralığı Filtreleme (minPrice, maxPrice)
+      if (minPrice !== null && !isNaN(minPrice)) {
+        calculated = calculated.filter(p => (p.customPrice || p.defaultPrice || 0) >= minPrice);
+      }
+      if (maxPrice !== null && !isNaN(maxPrice)) {
+        calculated = calculated.filter(p => (p.customPrice || p.defaultPrice || 0) <= maxPrice);
+      }
+
+      // Şehir Filtreleme (cities=İzmir,İstanbul)
+      if (citiesFilter.length > 0) {
+        calculated = calculated.filter(p => {
+          const city = (p.city || 'İstanbul').toLowerCase();
+          const dealer = (p.dealerName || '').toLowerCase();
+          return citiesFilter.some(cf => city.includes(cf) || dealer.includes(cf));
+        });
       }
 
       if (searchFilter) {
@@ -1748,6 +1943,48 @@
           (p.partGroup || '').toLowerCase().includes(searchFilter)
         );
       }
+
+      // prompt.md ADIM 4: Dinamik Facet Sayıları Hesaplama
+      const facets = {
+        brand: {},
+        subcategory: {},
+        condition: {},
+        city: {},
+        sellerType: {},
+        shipping: {}
+      };
+      calculated.forEach(p => {
+        const b = p.brand || p.vehicleBrand || 'OEM';
+        facets.brand[b] = (facets.brand[b] || 0) + 1;
+
+        const nm = (p.name || '').toLowerCase();
+        if (nm.includes('ön fren diski')) facets.subcategory['Ön Fren Diski'] = (facets.subcategory['Ön Fren Diski'] || 0) + 1;
+        if (nm.includes('arka fren diski')) facets.subcategory['Arka Fren Diski'] = (facets.subcategory['Arka Fren Diski'] || 0) + 1;
+        if (nm.includes('balata') || nm.includes('ön fren balatası')) facets.subcategory['Ön Fren Balatası'] = (facets.subcategory['Ön Fren Balatası'] || 0) + 1;
+        if (nm.includes('kaliper') || nm.includes('tamir')) facets.subcategory['Fren Kaliperi & Tamir Tk.'] = (facets.subcategory['Fren Kaliperi & Tamir Tk.'] || 0) + 1;
+
+        if (p.isDiscounted) {
+          facets.condition['Muadil'] = (facets.condition['Muadil'] || 0) + 1;
+        } else {
+          facets.condition['Sıfır'] = (facets.condition['Sıfır'] || 0) + 1;
+        }
+
+        const cty = p.city || 'İstanbul';
+        ['İstanbul', 'Ankara', 'İzmir', 'Bursa'].forEach(c => {
+          if (cty.toLowerCase().includes(c.toLowerCase()) || (p.dealerName && p.dealerName.toLowerCase().includes(c.toLowerCase()))) {
+            facets.city[c] = (facets.city[c] || 0) + 1;
+          }
+        });
+
+        const stk = p.stock !== undefined ? p.stock : 10;
+        if (stk > 5) facets.shipping['sameDay'] = (facets.shipping['sameDay'] || 0) + 1;
+        facets.shipping['freeShipping'] = (facets.shipping['freeShipping'] || 0) + 1;
+        if (stk > 10) facets.shipping['immediateDelivery'] = (facets.shipping['immediateDelivery'] || 0) + 1;
+
+        facets.sellerType['verified'] = (facets.sellerType['verified'] || 0) + 1;
+        facets.sellerType['distributor'] = (facets.sellerType['distributor'] || 0) + 1;
+        facets.sellerType['wholesaler'] = (facets.sellerType['wholesaler'] || 0) + 1;
+      });
 
       const currentBal = firstCust && firstCust.balance !== undefined ? firstCust.balance : 14850.00;
 
@@ -1764,6 +2001,7 @@
           totalCount: calculated.length,
           totalPages: 1
         },
+        facets: facets,
         count: calculated.length,
         data: calculated
       };
@@ -1784,8 +2022,8 @@
       };
     }
 
-    // 10. POST /store/orders
-    if (cleanEndpoint === '/store/orders' && method === 'POST') {
+    // 10. POST /store/orders & POST /orders & POST /tenant/orders
+    if ((cleanEndpoint === '/store/orders' || cleanEndpoint === '/orders' || cleanEndpoint === '/tenant/orders') && method === 'POST') {
       const orderNumber = `SP-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const items = body.items || [];
       let listPriceTotal = 0;
@@ -1921,6 +2159,21 @@
       }
       saveMockStore(store);
 
+      // Yeni sipariş oluştuğunda otomatik kargo & sipariş bildirimi üret
+      const orderNotif = {
+        id: `notif-${Date.now().toString(36)}`,
+        type: 'SHIPMENT',
+        category: 'shipping',
+        title: '📦 Yeni Sipariş Alındı',
+        message: `Sipariş #${orderNumber} başarıyla oluşturuldu ve yetkili satıcı bayiye iletildi. Tutar: ₺${totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`,
+        orderNumber: orderNumber,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      };
+      if (!Array.isArray(store.notifications)) store.notifications = [];
+      store.notifications.unshift(orderNotif);
+      saveMockStore(store);
+
       return {
         success: true,
         message: `Siparişiniz #${orderNumber} numarasıyla başarıyla oluşturuldu.`,
@@ -1935,6 +2188,114 @@
             totalAmount
           }
         }
+      };
+    }
+
+    // =========================================================================
+    // 10.1 FAVORİLER SERVİSİ: GET & POST /favorites
+    // =========================================================================
+    if ((cleanEndpoint === '/favorites' || cleanEndpoint === '/api/favorites') && method === 'GET') {
+      const favs = store.favorites || [];
+      return {
+        success: true,
+        count: favs.length,
+        data: favs
+      };
+    }
+
+    if ((cleanEndpoint === '/favorites' || cleanEndpoint === '/api/favorites') && method === 'POST') {
+      const prodId = String(body.productId || body.id || '');
+      if (!Array.isArray(store.favorites)) store.favorites = [];
+
+      let isFav = false;
+      const idx = store.favorites.indexOf(prodId);
+      if (idx > -1) {
+        store.favorites.splice(idx, 1);
+        isFav = false;
+      } else {
+        if (prodId) store.favorites.push(prodId);
+        isFav = true;
+
+        // Favoriye eklendiğinde eğer ürün stoğu 5'in altındaysa otomatik Stok Uyarısı bildirimi üret
+        const targetProd = (store.products || []).find(p => String(p.id) === prodId);
+        if (targetProd && targetProd.stock !== undefined && targetProd.stock < 5) {
+          store.notifications.unshift({
+            id: `notif-stock-${Date.now().toString(36)}`,
+            type: 'STOCK_ALERT',
+            category: 'stock',
+            title: '⚠️ Kritik Stok Uyarısı',
+            message: `Favorinize eklediğiniz '${targetProd.name || 'Parça'}' stokları tükenmek üzere! Kalan stok: ${targetProd.stock} adet.`,
+            productId: prodId,
+            isRead: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+
+      saveMockStore(store);
+      return {
+        success: true,
+        isFavorite: isFav,
+        count: store.favorites.length,
+        data: store.favorites,
+        message: isFav ? 'Ürün favorilere eklendi.' : 'Ürün favorilerden kaldırıldı.'
+      };
+    }
+
+    // =========================================================================
+    // 10.2 AKILLI BİLDİRİM VE MESAJLAR: GET & POST /notifications
+    // =========================================================================
+    if ((cleanEndpoint === '/notifications' || cleanEndpoint === '/api/notifications') && method === 'GET') {
+      const notifs = store.notifications || [];
+      const unreadCount = notifs.filter(n => !n.isRead).length;
+      return {
+        success: true,
+        count: notifs.length,
+        unreadCount: unreadCount,
+        data: notifs
+      };
+    }
+
+    if ((cleanEndpoint === '/notifications/read' || cleanEndpoint === '/api/notifications/read') && method === 'POST') {
+      if (!Array.isArray(store.notifications)) store.notifications = [];
+      if (body.all || !body.id) {
+        store.notifications.forEach(n => { n.isRead = true; });
+      } else {
+        const found = store.notifications.find(n => n.id === body.id);
+        if (found) found.isRead = true;
+      }
+      saveMockStore(store);
+      const unreadCount = store.notifications.filter(n => !n.isRead).length;
+      return {
+        success: true,
+        unreadCount: unreadCount,
+        data: store.notifications,
+        message: 'Bildirimler okundu olarak işaretlendi.'
+      };
+    }
+
+    if ((cleanEndpoint === '/notifications/trigger' || cleanEndpoint === '/api/notifications/trigger') && method === 'POST') {
+      if (!Array.isArray(store.notifications)) store.notifications = [];
+      const newNotif = {
+        id: `notif-${Date.now().toString(36)}`,
+        type: body.type || 'ADMIN_MESSAGE',
+        category: body.category || 'message',
+        title: body.title || '💬 Canlı Sistem Bildirimi',
+        message: body.message || 'Sistemden yeni bir mesaj veya durum güncellemesi iletildi.',
+        productId: body.productId || null,
+        orderNumber: body.orderNumber || null,
+        trackingNumber: body.trackingNumber || null,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      };
+      store.notifications.unshift(newNotif);
+      saveMockStore(store);
+      const unreadCount = store.notifications.filter(n => !n.isRead).length;
+      return {
+        success: true,
+        unreadCount: unreadCount,
+        data: newNotif,
+        message: 'Yeni bildirim başarıyla oluşturuldu.'
       };
     }
 
@@ -2799,7 +3160,8 @@
       if (!url.startsWith('/api')) {
         url = `${API_BASE}${url.startsWith('/') ? url : '/' + url}`;
       } else if (!isDirectExpress) {
-        url = `https://saas-g-ncel-10-10-2026simdi-main.onrender.com${url}`;
+        const rootOrigin = API_BASE.replace(/\/api\/?$/, '');
+        url = `${rootOrigin}${url}`;
       }
     }
 
@@ -2920,8 +3282,7 @@
       if (response.status === 401 && !isLoginEndpoint) {
         if (isStoreContext) {
           console.warn(`[API] Vitrinde yetkisiz/oturumsuz istek (401). Ziyaretçi modunda kalınacak.`);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          // prompt.md Kuralı: Vitrinde arka plan 401 hatası token'ı zorla silmemelidir
           if (data && typeof data === 'object') {
             data._status = 401;
             data._ok = false;
