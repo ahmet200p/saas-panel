@@ -535,15 +535,27 @@
           tenant: user.tenant || null,
           customerProfile: user.customerProfile || null
         };
+        let redirectUrl = '/store.html';
+        const rawRole = String(user.role || '').toUpperCase();
+        if (rawRole === 'SUPER_ADMIN' || rawRole === 'ADMIN') {
+          redirectUrl = '/admin.html';
+        } else if (rawRole === 'BAYI' || rawRole === 'TENANT_ADMIN') {
+          redirectUrl = '/bayi.html';
+        } else if (rawRole === 'MUSTERI' || rawRole === 'CUSTOMER') {
+          redirectUrl = '/store.html';
+        }
+
         return {
           success: true,
           message: 'Giriş başarılı.',
           token: token,
           role: user.role,
+          redirectUrl: redirectUrl,
           user: userPayload,
           data: {
             token: token,
             role: user.role,
+            redirectUrl: redirectUrl,
             user: userPayload
           }
         };
@@ -3396,13 +3408,23 @@
     }
 
     if (allowedRoles && allowedRoles.length > 0) {
-      if (!allowedRoles.includes(user.role)) {
+      const normalizedUserRole = String(user.role || '').toUpperCase();
+      const isAllowed = allowedRoles.some(r => {
+        const nr = String(r).toUpperCase();
+        if (nr === normalizedUserRole) return true;
+        if ((nr === 'SUPER_ADMIN' || nr === 'ADMIN') && (normalizedUserRole === 'SUPER_ADMIN' || normalizedUserRole === 'ADMIN')) return true;
+        if ((nr === 'BAYI' || nr === 'TENANT_ADMIN') && (normalizedUserRole === 'BAYI' || normalizedUserRole === 'TENANT_ADMIN')) return true;
+        if ((nr === 'MUSTERI' || nr === 'CUSTOMER') && (normalizedUserRole === 'MUSTERI' || normalizedUserRole === 'CUSTOMER')) return true;
+        return false;
+      });
+
+      if (!isAllowed) {
         alert(`Bu alana erişim yetkiniz bulunmamaktadır. (Gereken Rol: ${allowedRoles.join(', ')})`);
-        if (user.role === 'SUPER_ADMIN') {
+        if (normalizedUserRole === 'SUPER_ADMIN' || normalizedUserRole === 'ADMIN') {
           window.location.href = 'admin.html';
-        } else if (user.role === 'TENANT_ADMIN') {
+        } else if (normalizedUserRole === 'BAYI' || normalizedUserRole === 'TENANT_ADMIN') {
           window.location.href = 'bayi.html';
-        } else if (user.role === 'CUSTOMER') {
+        } else if (normalizedUserRole === 'MUSTERI' || normalizedUserRole === 'CUSTOMER') {
           const storeUrl = (typeof window !== 'undefined' && window.location && window.location.pathname.includes('/saas-panel-ui'))
             ? '../storefront-ui/store.html'
             : 'store.html';

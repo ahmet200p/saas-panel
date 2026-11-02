@@ -19,6 +19,8 @@
   <script src="api.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="assets/js/api.js"></script>
+  <!-- Dinamik Login & Rol Bazlı Routing Motoru (prompt.md ADIM 1) -->
+  <script src="assets/js/login.js"></script>
   <style>
     /* Mobile-First Custom Overrides */
     html,
@@ -254,7 +256,7 @@
           </a>
           <a href="bayi.html"
             class="quick-link-card min-h-[44px] flex sm:flex-col items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs sm:text-xs font-semibold text-slate-700 hover:text-blue-700 transition"
-            onclick="quickLoginAndGo('TENANT_ADMIN', 'bayi.html', event)">
+            onclick="quickLoginAndGo('BAYI', 'bayi.html', event)">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600">
               <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -264,7 +266,7 @@
           </a>
           <a href="store.html"
             class="quick-link-card min-h-[44px] flex sm:flex-col items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs sm:text-xs font-semibold text-slate-700 hover:text-blue-700 transition"
-            onclick="quickLoginAndGo('CUSTOMER', 'store.html', event)">
+            onclick="quickLoginAndGo('MUSTERI', 'store.html', event)">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
               <circle cx="9" cy="21" r="1" />
@@ -595,11 +597,12 @@
     // Doğrudan panellere hızlı giriş yardımcısı
     function quickLoginAndGo(role, targetPage, event) {
       if (event) event.preventDefault();
-      if (role === 'SUPER_ADMIN') {
+      const uRole = String(role).trim().toUpperCase();
+      if (uRole === 'SUPER_ADMIN' || uRole === 'ADMIN') {
         fillTestCreds('admin@sistem.com', '123456');
-      } else if (role === 'TENANT_ADMIN') {
+      } else if (uRole === 'BAYI' || uRole === 'TENANT_ADMIN') {
         fillTestCreds('ahmet@ahmetoto.com', '123456');
-      } else if (role === 'CUSTOMER') {
+      } else if (uRole === 'MUSTERI' || uRole === 'CUSTOMER') {
         fillTestCreds('kemal@kemaloto.com', '123456');
       }
       const form = document.getElementById('login-form');
@@ -630,17 +633,20 @@
       if (existingUserStr) {
         try {
           const user = JSON.parse(existingUserStr);
-          if (user && user.role === 'CUSTOMER') {
+          if (user && (user.role === 'CUSTOMER' || user.role === 'MUSTERI')) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
           } else if (existingToken && user && user.role) {
             const params = new URLSearchParams(window.location.search);
             const forceLogin = params.has('logout') || params.has('switch') || params.has('login');
             if (!forceLogin) {
-              if (user.role === 'SUPER_ADMIN') {
+              const uRole = String(user.role).trim().toUpperCase();
+              if (uRole === 'SUPER_ADMIN' || uRole === 'ADMIN') {
                 window.location.href = 'admin.html';
-              } else if (user.role === 'TENANT_ADMIN') {
+              } else if (uRole === 'BAYI' || uRole === 'TENANT_ADMIN') {
                 window.location.href = 'bayi.html';
+              } else if (uRole === 'MUSTERI' || uRole === 'CUSTOMER') {
+                window.location.href = 'store.html';
               }
             }
           }
@@ -718,16 +724,38 @@
                 }
               }
 
-              const userRole = (res.user && res.user.role) || res.role;
-              if (userRole === 'SUPER_ADMIN') {
-                window.location.href = 'admin.html';
-              } else if (userRole === 'TENANT_ADMIN') {
-                window.location.href = 'bayi.html';
-              } else if (userRole === 'CUSTOMER') {
-                window.location.href = 'store.html';
-              } else {
-                window.location.href = 'admin.html';
+              // ADIM 1: FRONTEND DİNAMİK YÖNLENDİRME (ROUTING)
+              // 1. Backend yanıtından veya JWT token'dan role bilgisini al
+              const rawRole = (res.role || (res.user && res.user.role) || (res.data && (res.data.role || (res.data.user && res.data.user.role))) || '');
+              let role = String(rawRole).trim().toUpperCase();
+
+              // JWT Token decode fallback
+              if (!role && res.token) {
+                try {
+                  const tokenParts = res.token.split('.');
+                  if (tokenParts.length >= 2) {
+                    const tokenPayload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    role = String(tokenPayload.role || tokenPayload.rawRole || '').trim().toUpperCase();
+                  }
+                } catch (jwtErr) {
+                  console.warn('[JWT_DECODE_FALLBACK]:', jwtErr);
+                }
               }
+
+              // prompt.md Kuralı:
+              // - Eğer role === 'SUPER_ADMIN' ise window.location.href = '/admin.html' (veya admin klasör yolu).
+              // - Eğer role === 'BAYI' ise window.location.href = '/bayi.html'.
+              // - Eğer role === 'MUSTERI' ise window.location.href = '/store.html' (veya vitrin ana sayfası).
+              if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+                window.location.href = res.redirectUrl || 'admin.html';
+              } else if (role === 'BAYI' || role === 'TENANT_ADMIN') {
+                window.location.href = res.redirectUrl || 'bayi.html';
+              } else if (role === 'MUSTERI' || role === 'CUSTOMER') {
+                window.location.href = res.redirectUrl || 'store.html';
+              } else {
+                window.location.href = res.redirectUrl || 'store.html';
+              }
+              return;
             } else {
               if (errorMsg) {
                 errorMsg.textContent = res.message || 'Hatalı e-posta veya şifre!';

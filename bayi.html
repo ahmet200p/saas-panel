@@ -1625,8 +1625,8 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-      // 0. Oturum ve Rol Doğrulama (TENANT_ADMIN Guard)
-      let currentUser = requireAuth(['TENANT_ADMIN', 'SUPER_ADMIN']);
+      // 0. Oturum ve Rol Doğrulama (BAYI / TENANT_ADMIN Guard)
+      let currentUser = requireAuth(['BAYI', 'TENANT_ADMIN', 'SUPER_ADMIN', 'ADMIN']);
       window.currentUser = currentUser;
       if (currentUser) {
         if (currentUser.tenantId || (currentUser.tenant && currentUser.tenant.id)) {
