@@ -279,33 +279,42 @@
     let activeCustomer = null;
     let selectedBrand = 'all';
 
-    async function loadStoreProducts() {
+    // ADIM 1: FRONTEND VERİ EŞLEŞTİRMESİ (MAPPING KONTROLÜ) - fetchProducts
+    async function fetchProducts() {
       try {
-        const res = await apiFetch('/store/products');
-        if (res && res.success) {
-          allProducts = res.data || [];
-          if (res.customer) {
-            activeCustomer = res.customer;
-            const nameEl = document.getElementById('cust-company-name');
-            const heroNameEl = document.getElementById('hero-cust-name');
-            const rateEl = document.getElementById('cust-discount-rate');
-            const balEl = document.getElementById('hero-cust-balance');
-            const subEl = document.getElementById('cart-customer-sub');
+        const data = await apiFetch('/store/products');
 
-            if (nameEl) nameEl.textContent = res.customer.companyName || 'Kemal Usta';
-            if (heroNameEl) heroNameEl.textContent = res.customer.companyName || 'Kemal Usta';
-            if (rateEl) rateEl.textContent = res.customer.appliedDiscountRate || '%20';
-            if (balEl) balEl.textContent = res.customer.currentBalance || '14.850,00 ₺';
-            if (subEl) subEl.textContent = `${res.customer.companyName} - ${res.customer.appliedDiscountRate} İskonto`;
-          }
-          renderProducts(allProducts);
-        } else {
-          document.getElementById('product-grid').innerHTML = `
-            <div class="col-span-full py-12 text-center text-red-500 font-semibold">
-              Katalog parçaları yüklenemedi. Lütfen tekrar deneyiniz.
-            </div>
-          `;
+        // prompt.md KURALI: Gelen veriyi döngüye sokmadan hemen önce konsola yazdır
+        console.log("Gelen Veri:", data);
+
+        // prompt.md KURALI: Backend veriyi { success: true, data: [...] } formatında sarmalıyorsa
+        // döngünün data.map değil KESİNLİKLE data.data.map (veya güvenli Array) olduğunu garantile
+        const products = Array.isArray(data)
+          ? data
+          : (data && Array.isArray(data.data)
+              ? data.data
+              : (data && Array.isArray(data.products)
+                  ? data.products
+                  : []));
+
+        if (data && data.customer) {
+          activeCustomer = data.customer;
+          const nameEl = document.getElementById('cust-company-name');
+          const heroNameEl = document.getElementById('hero-cust-name');
+          const rateEl = document.getElementById('cust-discount-rate');
+          const balEl = document.getElementById('hero-cust-balance');
+          const subEl = document.getElementById('cart-customer-sub');
+
+          if (nameEl) nameEl.textContent = data.customer.companyName || 'Kemal Usta';
+          if (heroNameEl) heroNameEl.textContent = data.customer.companyName || 'Kemal Usta';
+          if (rateEl) rateEl.textContent = data.customer.appliedDiscountRate || '%20';
+          if (balEl) balEl.textContent = data.customer.currentBalance || '14.850,00 ₺';
+          if (subEl) subEl.textContent = `${data.customer.companyName} - ${data.customer.appliedDiscountRate} İskonto`;
         }
+
+        allProducts = products;
+        renderProducts(allProducts);
+
       } catch (err) {
         console.error('[STORE_LOAD_ERROR]:', err);
         document.getElementById('product-grid').innerHTML = `
@@ -316,10 +325,18 @@
       }
     }
 
+    // Geriye dönük uyumluluk alias'ı
+    const loadStoreProducts = fetchProducts;
+    window.fetchProducts = fetchProducts;
+    window.loadStoreProducts = fetchProducts;
+
     function renderProducts(products) {
       const grid = document.getElementById('product-grid');
       const countBadge = document.getElementById('product-count-badge');
-      if (countBadge) countBadge.textContent = `${products.length} Parça Bulundu`;
+      if (countBadge) countBadge.textContent = `${(products && products.length) || 0} Parça Bulundu`;
+
+      // prompt.md ADIM 1: Gelen veriyi döngüye sokmadan hemen önce konsola yazdır
+      console.log("Gelen Veri:", products);
 
       if (!products || products.length === 0) {
         grid.innerHTML = `
@@ -330,39 +347,75 @@
         return;
       }
 
-      grid.innerHTML = products.map(prod => {
-        const listPrice = parseFloat(prod.defaultPrice || 500);
-        const netPrice = parseFloat(prod.discountedPrice || (listPrice * 0.8));
-        const saved = parseFloat((listPrice - netPrice).toFixed(2));
-        const img = prod.imageUrl || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=400&auto=format&fit=crop&q=80';
+      // prompt.md ADIM 1: HTML şablonunun içindeki değişkenlerin (product.name, product.price vb.)
+      // Prisma modelindeki sütun isimleriyle BİREBİR aynı olduğunu kontrol et ve eşleştir:
+      // Prisma Model: name, defaultPrice, customPrice, stock, oeNumber, vehicleBrand, category, partGroup, imageUrl, compatibleModels
+      grid.innerHTML = products.map(product => {
+        const name = product.name || 'Orijinal Yedek Parça';
+        const oeNumber = product.oeNumber || product.oemNo || 'OE-0000';
+        const vehicleBrand = product.vehicleBrand || product.brand || 'Renault';
+        const category = product.partGroup || product.category || 'Yedek Parça';
+        const compatibleModels = product.compatibleModels || 'Tüm Modeller';
+        const stock = (product.stock !== null && product.stock !== undefined) ? product.stock : 10;
+        const productId = product.tenantProductId || product.productId || product.id;
+
+        // Fiyat Eşleştirmesi (Prisma: defaultPrice, customPrice veya genel price)
+        const rawDefaultPrice = product.customPrice !== null && product.customPrice !== undefined
+          ? parseFloat(product.customPrice)
+          : (product.defaultPrice !== null && product.defaultPrice !== undefined
+              ? parseFloat(product.defaultPrice)
+              : (product.price ? parseFloat(product.price) : 500));
+
+        const listPrice = isNaN(rawDefaultPrice) ? 500 : rawDefaultPrice;
+        const netPrice = product.discountedPrice
+          ? parseFloat(product.discountedPrice)
+          : (product.pricing && product.pricing.finalPrice
+              ? parseFloat(product.pricing.finalPrice)
+              : parseFloat((listPrice * 0.8).toFixed(2)));
+
+        // Görsel Eşleştirmesi (Prisma: imageUrl, images dizisi veya JSON string)
+        let img = product.imageUrl;
+        if (!img && product.images) {
+          if (Array.isArray(product.images) && product.images.length > 0) {
+            img = product.images[0];
+          } else if (typeof product.images === 'string' && product.images.startsWith('[')) {
+            try {
+              const parsedImgs = JSON.parse(product.images);
+              if (Array.isArray(parsedImgs) && parsedImgs.length > 0) img = parsedImgs[0];
+            } catch (e) {}
+          }
+        }
+        if (!img) {
+          img = 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=400&auto=format&fit=crop&q=80';
+        }
 
         return `
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between overflow-hidden group">
             <div>
-              <!-- Görsel ve OE Rozeti -->
+              <!-- Görsel ve OE Rozeti (Prisma: imageUrl, oeNumber, vehicleBrand) -->
               <div class="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
-                <img src="${img}" alt="${prod.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                <img src="${img}" alt="${name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                 <span class="absolute top-2.5 left-2.5 bg-slate-900/85 backdrop-blur-sm text-white text-[11px] font-mono font-bold px-2 py-0.5 rounded-md">
-                  OE: ${prod.oeNumber || '7701208265'}
+                  OE: ${oeNumber}
                 </span>
                 <span class="absolute top-2.5 right-2.5 bg-blue-600 text-white text-[11px] font-semibold px-2 py-0.5 rounded-md">
-                  ${prod.vehicleBrand || 'Renault'}
+                  ${vehicleBrand}
                 </span>
               </div>
 
-              <!-- Parça Detayları -->
+              <!-- Parça Detayları (Prisma: name, partGroup/category, compatibleModels) -->
               <div class="p-4 sm:p-5">
                 <div class="text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-1">
-                  ${prod.partGroup || prod.category || 'Fren Sistemi'}
+                  ${category}
                 </div>
                 <h3 class="text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug mb-2">
-                  ${prod.name}
+                  ${name}
                 </h3>
                 <div class="text-xs text-slate-500 line-clamp-1 mb-3">
-                  Uyumlu: ${prod.compatibleModels || 'Megane IV, Clio V, Talisman'}
+                  Uyumlu: ${compatibleModels}
                 </div>
 
-                <!-- Fiyat Kırılımı -->
+                <!-- Fiyat Kırılımı (Prisma: defaultPrice, customPrice, discountedPrice) -->
                 <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 mb-2">
                   <div class="flex items-center justify-between text-xs text-slate-400 mb-0.5">
                     <span>Liste Fiyatı:</span>
@@ -380,9 +433,9 @@
               </div>
             </div>
 
-            <!-- KURAL 5: Dokunmatik Hedef min-h-[44px] -->
+            <!-- Dokunmatik Hedef min-h-[44px] -->
             <div class="p-4 sm:p-5 pt-0">
-              <button onclick="addToCart('${prod.tenantProductId || prod.productId}')" class="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+              <button onclick="addToCart('${productId}')" class="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
