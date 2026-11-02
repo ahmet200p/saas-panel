@@ -1186,8 +1186,8 @@
       };
     }
 
-    // 7. GET /tenant/catalog & GET /tenant/products
-    if ((cleanEndpoint === '/tenant/catalog' || cleanEndpoint === '/tenant/products') && method === 'GET') {
+    // 7. GET /tenant/catalog, /tenant/products & /bayi/products
+    if ((cleanEndpoint === '/tenant/catalog' || cleanEndpoint === '/tenant/products' || cleanEndpoint === '/bayi/products' || cleanEndpoint === '/bayi/catalog') && method === 'GET') {
       const activeTenant = (store.tenants && store.tenants[0]) || { name: 'Ahmet Oto (Yetkili Bayi)' };
       const currentDealerName = activeTenant.name || 'Ahmet Oto (Yetkili Bayi)';
       const items = store.tenantCatalog.map(tc => {
@@ -1217,8 +1217,8 @@
       };
     }
 
-    // 7b. POST /tenant/products & POST /tenant/catalog
-    if ((cleanEndpoint === '/tenant/products' || cleanEndpoint === '/tenant/catalog') && method === 'POST') {
+    // 7b. POST /tenant/products, /tenant/catalog & /bayi/products
+    if ((cleanEndpoint === '/tenant/products' || cleanEndpoint === '/tenant/catalog' || cleanEndpoint === '/bayi/products' || cleanEndpoint === '/bayi/catalog') && method === 'POST') {
       // Onay Kontrolü (requireApprovedDealer)
       let storedUser = null;
       try { storedUser = JSON.parse(localStorage.getItem('user')); } catch (e) {}
@@ -1285,8 +1285,54 @@
       };
     }
 
-    // 7c. DELETE /tenant/products/:id & DELETE /tenant/catalog/:id
-    if ((cleanEndpoint.startsWith('/tenant/products/') || cleanEndpoint.startsWith('/tenant/catalog/')) && method === 'DELETE') {
+    // 7bb. PATCH & PUT /bayi/products/:id & /tenant/products/:id (Ürün & Stok Güncelleme)
+    if ((cleanEndpoint.startsWith('/bayi/products/') || cleanEndpoint.startsWith('/tenant/products/') || cleanEndpoint.startsWith('/bayi/catalog/') || cleanEndpoint.startsWith('/tenant/catalog/')) && (method === 'PATCH' || method === 'PUT')) {
+      const parts = cleanEndpoint.split('/');
+      const targetId = parts[parts.length - 1];
+
+      const existingIndex = (store.tenantCatalog || []).findIndex(tc =>
+        String(tc.id) === String(targetId) || String(tc.productId) === String(targetId)
+      );
+
+      if (existingIndex >= 0) {
+        const tc = store.tenantCatalog[existingIndex];
+        const prod = (store.products || []).find(p => String(p.id) === String(tc.productId)) || tc.product || {};
+
+        if (body.price !== undefined || body.customPrice !== undefined) {
+          const pr = parseFloat(body.price !== undefined ? body.price : body.customPrice);
+          if (!isNaN(pr)) {
+            tc.customPrice = pr;
+            if (prod) prod.defaultPrice = pr;
+          }
+        }
+        if (body.stock !== undefined) {
+          const st = parseInt(body.stock, 10);
+          if (!isNaN(st)) tc.stock = st;
+        }
+        if (prod) {
+          if (body.name) prod.name = String(body.name).trim();
+          if (body.oeNumber) prod.oeNumber = String(body.oeNumber).trim();
+          if (body.category) prod.category = String(body.category).trim();
+          if (body.vehicleBrand) prod.vehicleBrand = String(body.vehicleBrand).trim();
+          if (body.compatibleModels) prod.compatibleModels = String(body.compatibleModels).trim();
+          if (body.partGroup) prod.partGroup = String(body.partGroup).trim();
+          if (body.image || body.imageUrl) {
+            prod.imageUrl = body.image || body.imageUrl;
+          }
+          tc.product = prod;
+        }
+
+        saveMockStore(store);
+        return {
+          success: true,
+          message: 'Ürün ve stok bilgileri başarıyla güncellendi.',
+          data: tc
+        };
+      }
+    }
+
+    // 7c. DELETE /tenant/products/:id, /tenant/catalog/:id & /bayi/products/:id
+    if ((cleanEndpoint.startsWith('/tenant/products/') || cleanEndpoint.startsWith('/tenant/catalog/') || cleanEndpoint.startsWith('/bayi/products/') || cleanEndpoint.startsWith('/bayi/catalog/')) && method === 'DELETE') {
       const parts = cleanEndpoint.split('/');
       const targetId = parts[parts.length - 1];
 
@@ -3179,9 +3225,9 @@
       }
     }
 
-    // 4. Bayi (Tenant) API isteklerinde URL'e zorunlu tenantId query parametresini otomatik ekle
+    // 4. Bayi (Tenant / Bayi) API isteklerinde URL'e zorunlu tenantId query parametresini otomatik ekle
     // Backend resolveTenantId(req, res) hem req.query.tenantId hem de headers kontrol eder; bu çift katman 400 Bad Request'i %100 önler.
-    if (tenantId && (url.includes('/tenant/') || url.endsWith('/tenant') || url.includes('/api/tenant'))) {
+    if (tenantId && (url.includes('/tenant/') || url.endsWith('/tenant') || url.includes('/api/tenant') || url.includes('/bayi/') || url.endsWith('/bayi') || url.includes('/api/bayi'))) {
       if (!url.includes('tenantId=')) {
         url += (url.includes('?') ? '&' : '?') + `tenantId=${encodeURIComponent(tenantId)}`;
       }

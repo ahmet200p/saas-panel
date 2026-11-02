@@ -5281,14 +5281,18 @@
         }
       });
 
-      // 5. Ürün Ekleme & Düzenleme (#form-add-product -> POST/PUT /api/tenant/products Otomotiv Alanları ve Veritabanı Kaydı)
+      // 5. Ürün Ekleme & Düzenleme (#form-add-product -> POST ${API_BASE_URL}/bayi/products)
       const formAddProduct = document.getElementById('form-add-product');
       if (formAddProduct) {
         formAddProduct.addEventListener('submit', async function (e) {
           e.preventDefault();
 
           if (window.isDealerPendingApproval) {
-            alert('Hesabınız onay aşamasındadır. Destek ekibimiz vitrin sayfanızı hazırlayabilmesi için en kısa sürede sizinle iletişime geçecektir.');
+            if (typeof Swal !== 'undefined') {
+              Swal.fire('Onay Bekleniyor', 'Hesabınız onay aşamasındadır. Destek ekibimiz vitrin sayfanızı hazırlayabilmesi için en kısa sürede sizinle iletişime geçecektir.', 'info');
+            } else {
+              alert('Hesabınız onay aşamasındadır. Destek ekibimiz vitrin sayfanızı hazırlayabilmesi için en kısa sürede sizinle iletişime geçecektir.');
+            }
             return;
           }
 
@@ -5303,11 +5307,15 @@
           const stock = document.getElementById('prod-stock').value;
 
           if (!name || !oeNumber || !price || !stock) {
-            alert('Lütfen tüm zorunlu alanları (Parça Adı, OE No, Liste Fiyatı, Stok) doldurunuz.');
+            if (typeof Swal !== 'undefined') {
+              Swal.fire('Eksik Alan', 'Lütfen tüm zorunlu alanları (Parça Adı, OE No, Liste Fiyatı, Stok) doldurunuz.', 'warning');
+            } else {
+              alert('Lütfen tüm zorunlu alanları (Parça Adı, OE No, Liste Fiyatı, Stok) doldurunuz.');
+            }
             return;
           }
 
-          // Görseller kontrolü: İsteğe bağlı (görsel yüklenmediyse hata vermez)
+          // Görseller kontrolü: İsteğe bağlı
           const filesInput = document.getElementById('prod-images');
           const files = filesInput ? filesInput.files : null;
 
@@ -5320,15 +5328,31 @@
           const selectedCatalogImages = typeof getSelectedCatalogImageUrls === 'function' ? getSelectedCatalogImageUrls() : [];
 
           try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || '';
             const apiBase = (typeof API_BASE_URL !== 'undefined')
               ? API_BASE_URL
               : ((typeof window !== 'undefined' && (window.API_BASE_URL || window.API_BASE))
                 ? (window.API_BASE_URL || window.API_BASE)
                 : 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api');
 
+            const tenantId = localStorage.getItem('tenantId') || (function() {
+              try {
+                const u = JSON.parse(localStorage.getItem('user'));
+                return u?.tenantId || u?.tenant?.id || '';
+              } catch(e) { return ''; }
+            })();
+
+            // prompt.md Kural 2: Kesinlikle 'Authorization': 'Bearer ' + localStorage.getItem('token')
+            const headers = {
+              'Authorization': 'Bearer ' + token
+            };
+            if (tenantId) {
+              headers['X-Tenant-Id'] = tenantId;
+              headers['Tenant-ID'] = tenantId;
+            }
+
             if (editId) {
-              // Düzenleme Modu: PATCH/PUT /api/tenant/products/:id (FormData ile alanlar ve varsa yeni görseller)
+              // Düzenleme / Stok Güncelleme Modu: PATCH ${API_BASE_URL}/bayi/products/:id
               const editFormData = new FormData();
               editFormData.append('name', name);
               editFormData.append('oeNumber', oeNumber);
@@ -5351,46 +5375,85 @@
                 }
               }
 
-              const patchHeaders = {};
-              if (token) patchHeaders['Authorization'] = 'Bearer ' + token;
+              let patchUrl = `${apiBase}/bayi/products/${editId}`;
+              if (tenantId && !patchUrl.includes('tenantId=')) {
+                patchUrl += (patchUrl.includes('?') ? '&' : '?') + `tenantId=${encodeURIComponent(tenantId)}`;
+              }
 
-              let resData;
+              let resData = null;
+              let patchSuccess = false;
               try {
-                const patchUrl = `${apiBase}/tenant/products/${editId}`;
                 const r = await fetch(patchUrl, {
                   method: 'PATCH',
-                  headers: patchHeaders,
+                  headers: headers,
                   body: editFormData
                 });
-                resData = await r.json();
+                if (r.ok || r.status === 200 || r.status === 201) {
+                  resData = await r.json();
+                  patchSuccess = true;
+                } else if (r.status === 404) {
+                  const fallbackUrl = `${apiBase}/tenant/products/${editId}` + (tenantId ? `?tenantId=${encodeURIComponent(tenantId)}` : '');
+                  const rFb = await fetch(fallbackUrl, {
+                    method: 'PATCH',
+                    headers: headers,
+                    body: editFormData
+                  });
+                  if (rFb.ok) {
+                    resData = await rFb.json();
+                    patchSuccess = true;
+                  }
+                }
               } catch (patchErr) {
+                console.warn('[PATCH_FETCH_FALLBACK]:', patchErr);
                 if (typeof apiFetch === 'function') {
-                  resData = await apiFetch(`/tenant/products/${editId}`, {
+                  resData = await apiFetch(`/bayi/products/${editId}`, {
                     method: 'PATCH',
                     body: editFormData
                   });
+                  patchSuccess = !!(resData && resData.success);
                 }
               }
 
-              if (resData && resData.success) {
-                if (typeof showToast === 'function') {
-                  showToast(resData.message || 'Ürün bilgileri başarıyla güncellendi!', 'success');
-                }
+              if (patchSuccess || (resData && resData.success)) {
                 closeDrawer(productDrawer);
                 formAddProduct.reset();
                 currentCatalogImages = [];
                 const cgGroup = document.getElementById('catalog-gallery-group');
                 if (cgGroup) cgGroup.style.display = 'none';
                 document.getElementById('prod-edit-id').value = '';
-                await loadCatalog();
+
+                // prompt.md Kural 3: Sayfayı yenilemeden (AJAX ile) bayinin ürün listesini DOM üzerinde anında güncelle
+                await loadProducts();
+
+                // prompt.md Kural 3: Bildirim ver
+                if (typeof Swal !== 'undefined') {
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı!',
+                    text: 'Ürün Başarıyla Eklendi',
+                    timer: 2000,
+                    showConfirmButton: false
+                  });
+                }
+                if (typeof showToast === 'function') {
+                  showToast('Ürün Başarıyla Eklendi', 'success');
+                }
                 return;
               } else {
-                alert(resData && resData.message ? resData.message : 'Ürün güncellenirken bir hata oluştu.');
+                const errMsg = (resData && (resData.message || resData.error)) || 'Ürün ve stok güncellenirken bir hata oluştu.';
+                if (typeof Swal !== 'undefined') {
+                  Swal.fire('Hata!', errMsg, 'error');
+                } else {
+                  alert(errMsg);
+                }
                 return;
               }
             }
 
-            // Yeni Ürün Ekleme Modu: POST /api/tenant/products (FormData ile tüm metin alanları + opsiyonel görsel)
+            // prompt.md Kural 1 & 2: ÜRÜN EKLEME (POST):
+            // Bayi formdan ürün bilgilerini (OEM kodu, fiyat, marka vb.) doldurup kaydettiğinde,
+            // verileri topla ve POST ${API_BASE_URL}/bayi/products endpoint'ine gönder.
+            // Headers kısmına kesinlikle 'Authorization': 'Bearer ' + localStorage.getItem('token') ekle.
             const formData = new FormData();
             formData.append('name', name);
             formData.append('oeNumber', oeNumber);
@@ -5419,7 +5482,7 @@
               }
               if (window.currentEnrichedData.technicalSpecs && typeof window.currentEnrichedData.technicalSpecs === 'object') {
                 formData.append('technicalSpecs', JSON.stringify(window.currentEnrichedData.technicalSpecs));
-                const specAttrs = Object.entries(window.currentEnrichedData.technicalSpecs).map(([key, value]) => ({ name: key, value }));
+                const specAttrs = Object.entries(window.currentEnrichedData.technicalSpecs).map(([k, v]) => ({ name: k, value: v }));
                 formData.append('attributes', JSON.stringify(specAttrs));
               } else if (window.currentEnrichedData.attributes) {
                 formData.append('attributes', JSON.stringify(window.currentEnrichedData.attributes));
@@ -5439,55 +5502,92 @@
               }
             }
 
-            const apiUrl = `${apiBase}/tenant/products`;
-            const headers = {};
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-            // DİKKAT: Content-Type başlığı el ile ZORLANMAZ! Tarayıcının multipart boundary üretmesine izin verilir.
+            let apiUrl = `${apiBase}/bayi/products`;
+            if (tenantId && !apiUrl.includes('tenantId=')) {
+              apiUrl += (apiUrl.includes('?') ? '&' : '?') + `tenantId=${encodeURIComponent(tenantId)}`;
+            }
 
             let response;
+            let data = null;
+            let postSuccess = false;
+
             try {
               response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: headers,
                 body: formData
               });
+
+              if (response.ok || response.status === 200 || response.status === 201) {
+                data = await response.json();
+                postSuccess = true;
+              } else if (response.status === 404) {
+                const fallbackUrl = `${apiBase}/tenant/products` + (tenantId ? `?tenantId=${encodeURIComponent(tenantId)}` : '');
+                const rFb = await fetch(fallbackUrl, {
+                  method: 'POST',
+                  headers: headers,
+                  body: formData
+                });
+                if (rFb.ok) {
+                  data = await rFb.json();
+                  postSuccess = true;
+                }
+              } else {
+                data = await response.json().catch(() => ({}));
+              }
             } catch (netErr) {
+              console.warn('[POST_FETCH_FALLBACK]:', netErr);
               if (typeof apiFetch === 'function') {
-                const fallbackData = await apiFetch('/tenant/products', {
+                data = await apiFetch('/bayi/products', {
                   method: 'POST',
                   body: formData
                 });
-                if (fallbackData && fallbackData.success) {
-                  if (typeof showToast === 'function') showToast(fallbackData.message || 'Ürün başarıyla kaydedildi!', 'success');
-                  closeDrawer(productDrawer);
-                  formAddProduct.reset();
-                  currentCatalogImages = [];
-                  const cgGroup = document.getElementById('catalog-gallery-group');
-                  if (cgGroup) cgGroup.style.display = 'none';
-                  await loadCatalog();
-                  return;
-                }
+                postSuccess = !!(data && data.success);
               }
-              throw netErr;
+              if (!postSuccess && !data) throw netErr;
             }
 
-            const data = await response.json();
-
-            if (response.ok && data && data.success) {
-              if (typeof showToast === 'function') showToast(data.message || 'Ürün başarıyla kaydedildi!', 'success');
+            if (postSuccess || (data && data.success)) {
+              // 1. Modalı kapat ve formu sıfırla
               closeDrawer(productDrawer);
               formAddProduct.reset();
               currentCatalogImages = [];
               const cgGroup = document.getElementById('catalog-gallery-group');
               if (cgGroup) cgGroup.style.display = 'none';
-              await loadCatalog();
+
+              // prompt.md Kural 3: Başarılı ürün ekleme veya stok güncelleme işlemlerinden sonra
+              // sayfayı yenilemeden (AJAX ile) bayinin ürün listesini DOM üzerinde anında güncelle
+              await loadProducts();
+
+              // prompt.md Kural 3: "Ürün Başarıyla Eklendi" bildirimi ver.
+              if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Başarılı!',
+                  text: 'Ürün Başarıyla Eklendi',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              }
+              if (typeof showToast === 'function') {
+                showToast('Ürün Başarıyla Eklendi', 'success');
+              }
               return;
             } else {
-              alert(data && data.message ? data.message : 'Ürün eklenirken bir hata oluştu.');
+              const errMsg = (data && (data.message || data.error)) || 'Ürün eklenirken bir hata oluştu.';
+              if (typeof Swal !== 'undefined') {
+                Swal.fire('Hata!', errMsg, 'error');
+              } else {
+                alert(errMsg);
+              }
             }
           } catch (error) {
             console.error('[ADD_PRODUCT_ERROR]:', error);
-            alert('Ürün eklenirken bir ağ veya sunucu hatası oluştu: ' + error.message);
+            if (typeof Swal !== 'undefined') {
+              Swal.fire('Ağ Hatası', 'Ürün eklenirken bir hata oluştu: ' + error.message, 'error');
+            } else {
+              alert('Ürün eklenirken bir ağ veya sunucu hatası oluştu: ' + error.message);
+            }
           } finally {
             if (submitBtn) {
               submitBtn.disabled = false;
@@ -6070,7 +6170,10 @@
       async function loadProducts() {
         const catalogTbody = document.getElementById('catalog-table-body') || document.querySelector('#section-products .orders-table tbody') || document.querySelector('#view-catalog .orders-table tbody');
         try {
-          const res = await apiFetch('/tenant/products');
+          let res = await apiFetch('/bayi/products');
+          if (!res || !res.success) {
+            res = await apiFetch('/tenant/products');
+          }
           if (!catalogTbody) return;
 
           if (res && res.success && Array.isArray(res.data)) {
