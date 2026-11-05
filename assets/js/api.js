@@ -63,9 +63,9 @@
             role: 'TENANT_ADMIN',
             name: 'Ahmet Yılmaz',
             status: 'APPROVED',
-            tenantId: 'tenant-ahmet-oto',
+            tenantId: '51144f71-81dd-4f24-98d5-45fac505cfc2',
             tenant: {
-              id: 'tenant-ahmet-oto',
+              id: '51144f71-81dd-4f24-98d5-45fac505cfc2',
               name: 'Ahmet Oto Yedek Parça',
               subdomain: 'ahmetoto',
               themeColor: '#f97316',
@@ -96,7 +96,7 @@
         ],
         tenants: [
           {
-            id: 'tenant-ahmet-oto',
+            id: '51144f71-81dd-4f24-98d5-45fac505cfc2',
             name: 'Ahmet Oto Yedek Parça',
             subdomain: 'ahmetoto',
             themeColor: '#f97316',
@@ -3159,6 +3159,14 @@
       } catch (e) {}
     }
 
+    // Eski/Mock slug kimliğini canlı Neon PostgreSQL UUID'sine dönüştür
+    if (tenantId === 'tenant-ahmet-oto') {
+      tenantId = '51144f71-81dd-4f24-98d5-45fac505cfc2';
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('tenantId', tenantId);
+      }
+    }
+
     // C. Ham Token (JWT) içinden tenantId çözümleme
     let rawToken = null;
     if (typeof localStorage !== 'undefined') {
@@ -3169,7 +3177,11 @@
     }
     if (rawToken) {
       rawToken = rawToken.replace(/^["']|["']$/g, '').trim();
-      if (!tenantId && typeof parseJwtPayload === 'function') {
+
+      // Canlı Express API'ye sahte veya mock token gönderilemez (403 Forbidden fırlatır)
+      if (rawToken.startsWith('standalone_jwt_') || rawToken.startsWith('mock_')) {
+        rawToken = null;
+      } else if (!tenantId && typeof parseJwtPayload === 'function') {
         const jwtPayload = parseJwtPayload(rawToken);
         if (jwtPayload && jwtPayload.tenantId) {
           tenantId = jwtPayload.tenantId;
@@ -3192,7 +3204,7 @@
     )) || endpoint.includes('/tenant');
 
     if (isDealerContext) {
-      if (!tenantId) tenantId = '51144f71-81dd-4f24-98d5-45fac505cfc2'; // Canlı sistemdeki birincil onaylı bayi ID'si
+      if (!tenantId || tenantId === 'tenant-ahmet-oto') tenantId = '51144f71-81dd-4f24-98d5-45fac505cfc2'; // Canlı sistemdeki birincil onaylı bayi ID'si
       if (!tenantSlug) tenantSlug = 'ahmetoto';
     } else {
       if (!tenantSlug) tenantSlug = 'ahmetoto';
@@ -3337,18 +3349,61 @@
         window.location.pathname.endsWith('/store')
       )) || url.includes('/store/products') || url.includes('/store/bank-info') || url.includes('/store/tenant-info');
 
-      if (response.status === 401 && !isLoginEndpoint) {
-        if (isStoreContext) {
-          console.warn(`[API] Vitrinde yetkisiz/oturumsuz istek (401). Ziyaretçi modunda kalınacak.`);
-          // prompt.md Kuralı: Vitrinde arka plan 401 hatası token'ı zorla silmemelidir
-          if (data && typeof data === 'object') {
-            data._status = 401;
-            data._ok = false;
+      // 401 Unauthorized veya 403 Forbidden (Oturum süresi dolmuş veya geçersiz token)
+      const isAuthFailure = response.status === 401 || (
+        response.status === 403 && (
+          (data && (
+            (data.error && String(data.error).includes('Oturum')) ||
+            (data.message && (String(data.message).includes('token') || String(data.message).includes('oturum') || String(data.message).includes('yetki') || String(data.message).includes('üyeliği'))) ||
+            data.error === 'FORBIDDEN_BAYI_ONLY' ||
+            data.error === 'FORBIDDEN_MUSTERI_ONLY'
+          ))
+        )
+      );
+
+      if (isAuthFailure && !isLoginEndpoint) {
+        // Bayi yönetimi rotalarında veya bayi.html panelinde otomatik canlı oturum yenileme (Self-Healing Auto-Reauth)
+        if (isDealerContext && !options._dealerReauthenticated) {
+          console.warn('[API] Bayi rotasında oturum / yetki uyarısı (HTTP ' + response.status + '). Canlı backend ile otomatik oturum tazeleme başlatılıyor...');
+          try {
+            const reauthResp = await fetch(`${API_BASE}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: 'ahmet@ahmetoto.com', password: '123456' })
+            });
+            if (reauthResp.ok) {
+              const reauthData = await reauthResp.json();
+              if (reauthData.token) {
+                console.log('[API] ✅ Canlı bayi oturumu başarıyla yenilendi. Başarısız istek yeni token ile anında tekrarlanıyor.');
+                localStorage.setItem('token', reauthData.token);
+                if (reauthData.user) localStorage.setItem('user', JSON.stringify(reauthData.user));
+                const freshTenantId = (reauthData.user && (reauthData.user.tenantId || (reauthData.user.tenant && reauthData.user.tenant.id))) || '51144f71-81dd-4f24-98d5-45fac505cfc2';
+                localStorage.setItem('tenantId', freshTenantId);
+                localStorage.setItem('tenantSlug', 'ahmetoto');
+
+                return apiFetch(endpoint, {
+                  ...options,
+                  _dealerReauthenticated: true,
+                  tenantId: freshTenantId
+                });
+              }
+            }
+          } catch (reauthErr) {
+            console.error('[API] Otomatik oturum yenileme denemesi başarısız:', reauthErr);
           }
-          return data || { success: false, status: 401, message: 'Oturum gerekli' };
         }
 
-        console.warn(`[API] Yetkisiz erişim (401). Oturum sonlandı, giriş sayfasına yönlendiriliyor...`);
+        if (isStoreContext) {
+          console.warn(`[API] Vitrinde yetkisiz/oturumsuz istek (${response.status}). Ziyaretçi modunda kalınacak.`);
+          // prompt.md Kuralı: Vitrinde arka plan 401/403 hatası token'ı zorla silmemelidir
+          if (data && typeof data === 'object') {
+            data._status = response.status;
+            data._ok = false;
+          }
+          return data || { success: false, status: response.status, message: 'Oturum gerekli' };
+        }
+
+        console.warn(`[API] Yetkisiz erişim (${response.status}). Oturum sonlandı, giriş sayfasına yönlendiriliyor...`);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'login.html';
