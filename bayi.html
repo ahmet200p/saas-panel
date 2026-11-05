@@ -123,9 +123,21 @@
     .tw-specs-table-wrap {
       border: 1px solid #cbd5e1;
       border-radius: 0.6rem;
-      overflow: hidden;
+      overflow-x: auto;
       background: #ffffff;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    #product-drawer .drawer-content {
+      width: 100% !important;
+      max-width: 580px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15) !important;
+    }
+    #product-drawer .drawer-body {
+      flex: 1 !important;
+      overflow-y: auto !important;
+      padding: 24px !important;
     }
     .tw-specs-table {
       width: 100%;
@@ -1269,11 +1281,6 @@
               </div>
             </div>
 
-
-
--->
-            </div>
-
             <!-- Uyumlu Araçlar (Fitment) Önizleme -->
             <div id="enriched-fitment-section" style="display: none; margin-bottom: 12px;">
               <span style="font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px;">
@@ -1312,10 +1319,19 @@
 
         </div>
 
-        <!-- Drawer en altında 'Ürünü Kaydet' ve 'İptal' butonları -->
-        <div class="drawer-footer">
-          <button type="submit" class="btn-save" id="btn-submit-product-form">Ürünü Kaydet</button>
-          <button type="button" class="btn-cancel" id="btn-cancel-product-drawer">İptal</button>
+        <!-- Drawer Alt Sabit İşlem Çubuğu (Modern Floating Footer) -->
+        <div class="drawer-footer" style="display: flex !important; gap: 12px !important; align-items: center !important; padding: 16px 24px !important; background: #ffffff !important; border-top: 1px solid #e2e8f0 !important; position: sticky !important; bottom: 0 !important; z-index: 40 !important; box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06) !important;">
+          <button type="submit" class="btn-save" id="btn-submit-product-form" style="flex: 2 !important; height: 46px !important; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important; color: #ffffff !important; font-weight: 800 !important; font-size: 0.95rem !important; border-radius: 12px !important; border: none !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35) !important; transition: all 0.2s ease !important;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Ürünü Kaydet</span>
+          </button>
+          <button type="button" class="btn-cancel" id="btn-cancel-product-drawer" style="flex: 1 !important; height: 46px !important; background: #f8fafc !important; color: #475569 !important; font-weight: 700 !important; font-size: 0.92rem !important; border-radius: 12px !important; border: 1.5px solid #cbd5e1 !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; transition: all 0.2s ease !important;">
+            İptal
+          </button>
         </div>
       </form>
 
@@ -5286,7 +5302,16 @@
           e.preventDefault();
 
           if (window.isDealerPendingApproval) {
-            alert('Hesabınız onay aşamasındadır. Destek ekibimiz vitrin sayfanızı hazırlayabilmesi için en kısa sürede sizinle iletişime geçecektir.');
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'warning',
+                title: 'Onay Aşamasında',
+                text: 'Hesabınız onay aşamasındadır. Destek ekibimiz vitrin sayfanızı hazırlayabilmesi için en kısa sürede sizinle iletişime geçecektir.',
+                confirmButtonColor: '#ea580c'
+              });
+            } else {
+              alert('Hesabınız onay aşamasındadır.');
+            }
             return;
           }
 
@@ -5301,94 +5326,32 @@
           const stock = document.getElementById('prod-stock').value;
 
           if (!name || !oeNumber || !price || !stock) {
-            alert('Lütfen tüm zorunlu alanları (Parça Adı, OE No, Liste Fiyatı, Stok) doldurunuz.');
+            if (typeof Swal !== 'undefined') {
+              Swal.fire('Eksik Bilgi', 'Lütfen tüm zorunlu alanları (Parça Adı, OE No, Liste Fiyatı, Stok) doldurunuz.', 'warning');
+            } else {
+              alert('Lütfen tüm zorunlu alanları doldurunuz.');
+            }
             return;
           }
 
-          // Görseller kontrolü: İsteğe bağlı (görsel yüklenmediyse hata vermez)
           const filesInput = document.getElementById('prod-images');
           const files = filesInput ? filesInput.files : null;
 
-          const submitBtn = formAddProduct.querySelector('button[type="submit"]') || document.getElementById('btn-submit-product-form');
+          const submitBtn = document.getElementById('btn-submit-product-form') || formAddProduct.querySelector('button[type="submit"]');
           if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = editId ? 'Güncelleniyor...' : 'Kaydediliyor...';
+            submitBtn.innerHTML = `
+              <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite;">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                <path d="M12 2a10 10 0 0 1 10 10"></path>
+              </svg>
+              <span>${editId ? 'Güncelleniyor...' : 'Kaydediliyor...'}</span>
+            `;
           }
 
           const selectedCatalogImages = typeof getSelectedCatalogImageUrls === 'function' ? getSelectedCatalogImageUrls() : [];
 
           try {
-            const token = localStorage.getItem('token');
-            // prompt.md ADIM 3: Ürün ekleme isteğinin KESİNLİKLE Render üzerindeki canlı API'ye gitmesini sağla (Ortak DB)
-            const LIVE_API_URL = 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api';
-            const apiBase = (typeof window !== 'undefined' && window.API_BASE)
-              ? window.API_BASE
-              : LIVE_API_URL;
-
-            if (editId) {
-              // Düzenleme Modu: PATCH/PUT /api/tenant/products/:id (FormData ile alanlar ve varsa yeni görseller)
-              const editFormData = new FormData();
-              editFormData.append('name', name);
-              editFormData.append('oeNumber', oeNumber);
-              editFormData.append('category', category);
-              editFormData.append('vehicleBrand', vehicleBrand);
-              editFormData.append('compatibleModels', compatibleModels);
-              editFormData.append('partGroup', partGroup);
-              editFormData.append('customPrice', parseFloat(price));
-              editFormData.append('price', parseFloat(price));
-              editFormData.append('stock', parseInt(stock, 10));
-
-              if (selectedCatalogImages.length > 0) {
-                editFormData.append('catalogImages', JSON.stringify(selectedCatalogImages));
-              }
-
-              if (files && files.length > 0) {
-                for (let i = 0; i < files.length; i++) {
-                  editFormData.append('image', files[i]);
-                  editFormData.append('images', files[i]);
-                }
-              }
-
-              const patchHeaders = {};
-              if (token) patchHeaders['Authorization'] = 'Bearer ' + token;
-
-              let resData;
-              try {
-                const patchUrl = `${apiBase}/tenant/products/${editId}`;
-                const r = await fetch(patchUrl, {
-                  method: 'PATCH',
-                  headers: patchHeaders,
-                  body: editFormData
-                });
-                resData = await r.json();
-              } catch (patchErr) {
-                if (typeof apiFetch === 'function') {
-                  resData = await apiFetch(`/tenant/products/${editId}`, {
-                    method: 'PATCH',
-                    body: editFormData
-                  });
-                }
-              }
-
-              if (resData && resData.success) {
-                if (typeof showToast === 'function') {
-                  showToast(resData.message || 'Ürün bilgileri başarıyla güncellendi!', 'success');
-                }
-                closeDrawer(productDrawer);
-                formAddProduct.reset();
-                currentCatalogImages = [];
-                const cgGroup = document.getElementById('catalog-gallery-group');
-                if (cgGroup) cgGroup.style.display = 'none';
-                document.getElementById('prod-edit-id').value = '';
-                await loadCatalog();
-                return;
-              } else {
-                alert(resData && resData.message ? resData.message : 'Ürün güncellenirken bir hata oluştu.');
-                return;
-              }
-            }
-
-            // Yeni Ürün Ekleme Modu: POST /api/tenant/products (FormData ile tüm metin alanları + opsiyonel görsel)
             const formData = new FormData();
             formData.append('name', name);
             formData.append('oeNumber', oeNumber);
@@ -5396,25 +5359,17 @@
             formData.append('vehicleBrand', vehicleBrand);
             formData.append('compatibleModels', compatibleModels);
             formData.append('partGroup', partGroup);
-            formData.append('price', price);
-            formData.append('stock', stock);
+            formData.append('customPrice', parseFloat(price));
+            formData.append('price', parseFloat(price));
+            formData.append('defaultPrice', parseFloat(price));
+            formData.append('stock', parseInt(stock, 10));
 
-            if (selectedCatalogImages.length > 0) {
-              formData.append('catalogImages', JSON.stringify(selectedCatalogImages));
-            }
-
+            // Zenginleştirilmiş Parça Verileri
             if (window.currentEnrichedData) {
               const refList = window.currentEnrichedData.referenceCodes || window.currentEnrichedData.crossReferences;
-              if (refList) {
-                formData.append('referenceCodes', JSON.stringify(refList));
-                formData.append('crossReferences', JSON.stringify(refList));
-              }
-              if (window.currentEnrichedData.originalOEMs) {
-                formData.append('originalOEMs', JSON.stringify(window.currentEnrichedData.originalOEMs));
-              }
-              if (window.currentEnrichedData.compatibleVehicles) {
-                formData.append('compatibleVehicles', JSON.stringify(window.currentEnrichedData.compatibleVehicles));
-              }
+              if (refList) formData.append('referenceCodes', JSON.stringify(refList));
+              if (window.currentEnrichedData.originalOEMs) formData.append('originalOEMs', JSON.stringify(window.currentEnrichedData.originalOEMs));
+              if (window.currentEnrichedData.compatibleVehicles) formData.append('compatibleVehicles', JSON.stringify(window.currentEnrichedData.compatibleVehicles));
               if (window.currentEnrichedData.technicalSpecs && typeof window.currentEnrichedData.technicalSpecs === 'object') {
                 formData.append('technicalSpecs', JSON.stringify(window.currentEnrichedData.technicalSpecs));
                 const specAttrs = Object.entries(window.currentEnrichedData.technicalSpecs).map(([key, value]) => ({ name: key, value }));
@@ -5422,12 +5377,12 @@
               } else if (window.currentEnrichedData.attributes) {
                 formData.append('attributes', JSON.stringify(window.currentEnrichedData.attributes));
               }
-              if (window.currentEnrichedData.diagramUrl) {
-                formData.append('diagramUrl', window.currentEnrichedData.diagramUrl);
-              }
-              if (window.currentEnrichedData.diagrams) {
-                formData.append('diagrams', JSON.stringify(window.currentEnrichedData.diagrams));
-              }
+              if (window.currentEnrichedData.diagramUrl) formData.append('diagramUrl', window.currentEnrichedData.diagramUrl);
+              if (window.currentEnrichedData.diagrams) formData.append('diagrams', JSON.stringify(window.currentEnrichedData.diagrams));
+            }
+
+            if (selectedCatalogImages.length > 0) {
+              formData.append('catalogImages', JSON.stringify(selectedCatalogImages));
             }
 
             if (files && files.length > 0) {
@@ -5437,59 +5392,120 @@
               }
             }
 
-            const apiUrl = `${apiBase}/tenant/products`;
-            const headers = {};
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-            // DİKKAT: Content-Type başlığı el ile ZORLANMAZ! Tarayıcının multipart boundary üretmesine izin verilir.
+            let resData = null;
+            let isSuccess = false;
 
-            let response;
-            try {
-              response = await fetch(apiUrl, {
-                method: 'POST',
+            // Öncelik 1: Merkezi apiFetch ile istek (otomatik Bearer token, X-Tenant-Id ve boundary desteği)
+            if (typeof apiFetch === 'function') {
+              try {
+                const endpoint = editId ? `/tenant/products/${editId}` : '/tenant/products';
+                const method = editId ? 'PATCH' : 'POST';
+                resData = await apiFetch(endpoint, {
+                  method: method,
+                  body: formData
+                });
+                if (resData && (resData.success || resData.id || resData.data)) {
+                  isSuccess = true;
+                }
+              } catch (apiErr) {
+                console.warn('[API_FETCH_TRY_FAILED, FALLING_BACK_DIRECT]:', apiErr);
+              }
+            }
+
+            // Öncelik 2: Doğrudan fetch fallback
+            if (!isSuccess) {
+              const LIVE_API = 'https://saas-g-ncel-10-10-2026simdi-main.onrender.com/api';
+              const base = (typeof window !== 'undefined' && (window.API_BASE_URL || window.API_BASE)) ? (window.API_BASE_URL || window.API_BASE) : LIVE_API;
+              const directUrl = editId ? `${base}/tenant/products/${editId}` : `${base}/tenant/products`;
+              const token = localStorage.getItem('token');
+              const headers = {};
+              if (token) headers['Authorization'] = 'Bearer ' + token;
+
+              const response = await fetch(directUrl, {
+                method: editId ? 'PATCH' : 'POST',
                 headers: headers,
                 body: formData
               });
-            } catch (netErr) {
-              if (typeof apiFetch === 'function') {
-                const fallbackData = await apiFetch('/tenant/products', {
-                  method: 'POST',
-                  body: formData
-                });
-                if (fallbackData && fallbackData.success) {
-                  if (typeof showToast === 'function') showToast(fallbackData.message || 'Ürün başarıyla kaydedildi!', 'success');
-                  closeDrawer(productDrawer);
-                  formAddProduct.reset();
-                  currentCatalogImages = [];
-                  const cgGroup = document.getElementById('catalog-gallery-group');
-                  if (cgGroup) cgGroup.style.display = 'none';
-                  await loadCatalog();
-                  return;
-                }
+
+              try {
+                resData = await response.json();
+              } catch (e) {
+                resData = { success: response.ok };
               }
-              throw netErr;
+              isSuccess = response.ok && (!resData || resData.success !== false);
             }
 
-            const data = await response.json();
+            if (isSuccess) {
+              if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                  icon: 'success',
+                  title: editId ? 'Ürün Güncellendi!' : 'Ürün Başarıyla Eklendi!',
+                  text: (resData && resData.message) || `"${name}" parçası kataloğunuza başarıyla kaydedildi.`,
+                  timer: 2000,
+                  showConfirmButton: false,
+                  confirmButtonColor: '#ea580c'
+                });
+              } else {
+                alert(editId ? 'Ürün Güncellendi!' : 'Ürün Başarıyla Eklendi!');
+              }
 
-            if (response.ok && data && data.success) {
-              if (typeof showToast === 'function') showToast(data.message || 'Ürün başarıyla kaydedildi!', 'success');
-              closeDrawer(productDrawer);
+              if (typeof closeDrawer === 'function') {
+                closeDrawer(productDrawer);
+              } else if (productDrawer) {
+                productDrawer.classList.remove('open', 'active');
+              }
+
               formAddProduct.reset();
               currentCatalogImages = [];
               const cgGroup = document.getElementById('catalog-gallery-group');
               if (cgGroup) cgGroup.style.display = 'none';
-              await loadCatalog();
-              return;
+              const enrichedBox = document.getElementById('enriched-data-container');
+              if (enrichedBox) enrichedBox.style.display = 'none';
+              window.currentEnrichedData = null;
+
+              // Katalog tablosunu anında yenile
+              if (typeof loadProducts === 'function') {
+                await loadProducts();
+              } else if (typeof loadCatalog === 'function') {
+                await loadCatalog();
+              }
             } else {
-              alert(data && data.message ? data.message : 'Ürün eklenirken bir hata oluştu.');
+              const errMsg = (resData && (resData.message || resData.error)) || 'Ürün kaydedilirken sunucu hatası oluştu. Lütfen tekrar deneyiniz.';
+              if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Kayıt Başarısız',
+                  text: errMsg,
+                  confirmButtonColor: '#ea580c'
+                });
+              } else {
+                alert(errMsg);
+              }
             }
+
           } catch (error) {
-            console.error('[ADD_PRODUCT_ERROR]:', error);
-            alert('Ürün eklenirken bir ağ veya sunucu hatası oluştu: ' + error.message);
+            console.error('[ADD_PRODUCT_FATAL_ERROR]:', error);
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Bağlantı Hatası',
+                text: 'İşlem gerçekleştirilemedi: ' + (error.message || 'Bilinmeyen hata'),
+                confirmButtonColor: '#ea580c'
+              });
+            } else {
+              alert('Bağlantı hatası: ' + error.message);
+            }
           } finally {
             if (submitBtn) {
               submitBtn.disabled = false;
-              submitBtn.textContent = editId ? 'Ürünü Güncelle' : 'Ürünü Kaydet';
+              submitBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>${editId ? 'Değişiklikleri Güncelle' : 'Ürünü Kaydet'}</span>
+              `;
             }
           }
         });
@@ -6065,6 +6081,7 @@
       // ==========================================================================
       let cachedCatalog = [];
 
+      window.loadCatalog = function() { return typeof loadProducts === "function" ? loadProducts() : Promise.resolve(); };
       async function loadProducts() {
         const catalogTbody = document.getElementById('catalog-table-body') || document.querySelector('#section-products .orders-table tbody') || document.querySelector('#view-catalog .orders-table tbody');
         try {
