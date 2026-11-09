@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>AFS B2B Vitrin | Ahmet Oto Orijinal & Eşdeğer Yedek Parça</title>
+  <title>ParçaPro B2B Vitrin | Çoklu Bayi Orijinal & Eşdeğer Yedek Parça Pazaryeri</title>
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,8 +50,8 @@
               </svg>
             </div>
             <div>
-              <div class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">Ahmet Oto B2B</div>
-              <div class="text-xs text-orange-600 font-semibold mt-0.5">Doğrudan Bayi Vitrini</div>
+              <div class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">ParçaPro B2B</div>
+              <div class="text-xs text-orange-600 font-semibold mt-0.5">Çoklu Bayi Pazaryeri Vitrini</div>
             </div>
           </a>
 
@@ -127,7 +127,7 @@
             Anlık Stok ve Özel B2B İskontolu Fiyatlar
           </h1>
           <p class="text-slate-300 text-xs sm:text-sm md:text-base mt-2 max-w-2xl">
-            Siparişleriniz doğrudan Ahmet Oto ana deposundan sevk edilir. Otoservisinize tanımlı iskonto kuralı anında uygulanır.
+            Siparişleriniz doğrudan ilgili yetkili bayinin deposundan sevk edilir. Otoservisinize tanımlı iskonto kuralı anında uygulanır.
           </p>
         </div>
 
@@ -174,8 +174,11 @@
         </button>
       </div>
 
-      <!-- Sayım ve Hızlı Sayfa Linkleri -->
-      <div class="flex items-center justify-between sm:justify-end gap-3 text-xs text-slate-500">
+      <!-- Satıcı / Bayi Seçimi + Sayım ve Hızlı Sayfa Linkleri -->
+      <div class="flex flex-wrap items-center justify-between sm:justify-end gap-3 text-xs text-slate-500">
+        <select id="dealer-filter-select" onchange="filterByDealer(this.value)" class="min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer">
+          <option value="all">🏪 Tüm Yetkili Bayiler</option>
+        </select>
         <span id="product-count-badge" class="font-semibold text-slate-700">Yükleniyor...</span>
         <div class="flex items-center gap-2">
           <a href="bayi.html" class="hover:text-blue-600 font-semibold underline">Bayi Paneli</a>
@@ -278,6 +281,109 @@
     let cart = [];
     let activeCustomer = null;
     let selectedBrand = 'all';
+    let selectedDealer = 'all';
+    let storeDealers = [];
+
+    function escapeHtmlStore(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function normalizeDealerKey(val) {
+      if (!val) return '';
+      return String(val)
+        .replace(/\(\s*Yetkili Bayi\s*\)/gi, '')
+        .trim()
+        .toLocaleLowerCase('tr-TR')
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function cleanDealerLabel(raw) {
+      if (!raw || typeof raw !== 'string') return 'Yetkili Bayi';
+      let clean = raw.replace(/\(\s*Yetkili Bayi\s*\)/gi, '').trim();
+      if (!clean) return 'Yetkili Bayi';
+      const hasSpace = /\s/.test(clean);
+      const isAllLower = clean === clean.toLocaleLowerCase('tr-TR');
+      const isAllUpper = clean === clean.toLocaleUpperCase('tr-TR');
+      if (!hasSpace || isAllLower || isAllUpper) {
+        clean = clean.replace(/[-_]+/g, ' ');
+        if (!/\s/.test(clean) && clean.length > 3 && clean.toLowerCase().endsWith('oto')) {
+          clean = clean.slice(0, -3) + ' Oto';
+        }
+        clean = clean.split(/\s+/).filter(Boolean).map(w => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')).join(' ');
+      }
+      return clean;
+    }
+
+    function resolveDealerDisplayName(p) {
+      if (!p) return 'Yetkili Bayi';
+      const raw = p.dealerName || p.tenantName || (p.tenant && p.tenant.name) || p.companyName || p.sellerName || p.supplierName || (p.user && (p.user.companyName || p.user.name));
+      if (raw && typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (!trimmed) return 'Yetkili Bayi';
+        const isExternalCatalog = !p.isLocalStock && (p.isCatalogOnly || (!p.tenantId && !p.tenant && !p.dealerName)) && /katalog|muadil|dış tedarik/i.test(trimmed);
+        if (isExternalCatalog) return trimmed;
+        const formatted = cleanDealerLabel(trimmed);
+        return formatted.toLowerCase().includes('yetkili') ? formatted : `${formatted} (Yetkili Bayi)`;
+      }
+      return 'Yetkili Bayi';
+    }
+
+    function getProductDealerKey(p) {
+      if (!p) return '';
+      const sub = String(p.tenantSubdomain || (p.tenant && p.tenant.subdomain) || '').trim().toLowerCase();
+      if (sub && sub !== 'bayi') return sub;
+      const raw = p.dealerName || (p.tenant && p.tenant.name) || p.companyName || p.sellerName || p.supplierName || '';
+      if (!raw || /dış tedarik|katalog muadili/i.test(raw)) return '';
+      return normalizeDealerKey(raw);
+    }
+
+    function populateDealerSelect() {
+      const sel = document.getElementById('dealer-filter-select');
+      if (!sel) return;
+      const map = new Map();
+      (storeDealers || []).forEach(d => {
+        const sub = String(d.subdomain || '').trim().toLowerCase();
+        const label = cleanDealerLabel(d.name || d.rawName || sub);
+        const key = sub || normalizeDealerKey(label);
+        if (key && !map.has(key)) map.set(key, { key, label });
+      });
+      (allProducts || []).forEach(p => {
+        const key = getProductDealerKey(p);
+        if (!key) return;
+        const label = cleanDealerLabel(resolveDealerDisplayName(p));
+        if (!map.has(key)) map.set(key, { key, label });
+      });
+      const prev = selectedDealer;
+      const options = Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label, 'tr'));
+      sel.innerHTML = '<option value="all">🏪 Tüm Yetkili Bayiler</option>' + options.map(o => `<option value="${escapeHtmlStore(o.key)}">🏪 ${escapeHtmlStore(o.label)}</option>`).join('');
+      if (prev && prev !== 'all') {
+        const matchedOpt = options.find(o => o.key === prev || normalizeDealerKey(o.key) === normalizeDealerKey(prev));
+        if (matchedOpt) sel.value = matchedOpt.key;
+      }
+    }
+
+    async function loadStoreDealers() {
+      try {
+        const res = await apiFetch('/store/dealers');
+        const list = (res && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : []);
+        if (list.length > 0) {
+          storeDealers = list.filter(d => d && d.isActive !== false && String(d.status || '').toUpperCase() !== 'REJECTED');
+          populateDealerSelect();
+        }
+      } catch (e) {}
+    }
 
     // ADIM 1: FRONTEND VERİ EŞLEŞTİRMESİ (MAPPING KONTROLÜ) - fetchProducts
     async function fetchProducts() {
@@ -313,7 +419,8 @@
         }
 
         allProducts = products;
-        renderProducts(allProducts);
+        populateDealerSelect();
+        applyStoreFilters();
 
       } catch (err) {
         console.error('[STORE_LOAD_ERROR]:', err);
@@ -358,6 +465,7 @@
         const compatibleModels = product.compatibleModels || 'Tüm Modeller';
         const stock = (product.stock !== null && product.stock !== undefined) ? product.stock : 10;
         const productId = product.tenantProductId || product.productId || product.id;
+        const sellerName = resolveDealerDisplayName(product);
 
         // Fiyat Eşleştirmesi (Prisma: defaultPrice, customPrice veya genel price)
         const rawDefaultPrice = product.customPrice !== null && product.customPrice !== undefined
@@ -411,8 +519,12 @@
                 <h3 class="text-sm sm:text-base font-bold text-slate-900 line-clamp-2 leading-snug mb-2">
                   ${name}
                 </h3>
-                <div class="text-xs text-slate-500 line-clamp-1 mb-3">
+                <div class="text-xs text-slate-500 line-clamp-1 mb-2">
                   Uyumlu: ${compatibleModels}
+                </div>
+                <div class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-slate-200 mb-3 max-w-full">
+                  <span>🏪</span>
+                  <span class="truncate">${escapeHtmlStore(sellerName)}</span>
                 </div>
 
                 <!-- Fiyat Kırılımı (Prisma: defaultPrice, customPrice, discountedPrice) -->
@@ -448,11 +560,20 @@
       }).join('');
     }
 
-    function handleStoreSearch(e) {
-      const query = (e.target.value || '').trim().toLowerCase();
+    function applyStoreFilters() {
+      const searchInput = document.getElementById('store-search-input');
+      const query = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
       let filtered = allProducts;
+
       if (selectedBrand && selectedBrand !== 'all') {
         filtered = filtered.filter(p => (p.vehicleBrand || '').toLowerCase().includes(selectedBrand.toLowerCase()));
+      }
+      if (selectedDealer && selectedDealer !== 'all') {
+        const dNorm = normalizeDealerKey(selectedDealer);
+        filtered = filtered.filter(p => {
+          const pKey = getProductDealerKey(p);
+          return pKey === selectedDealer || normalizeDealerKey(pKey) === dNorm;
+        });
       }
       if (query) {
         filtered = filtered.filter(p =>
@@ -460,10 +581,20 @@
           (p.oeNumber || '').toLowerCase().includes(query) ||
           (p.vehicleBrand || '').toLowerCase().includes(query) ||
           (p.partGroup || '').toLowerCase().includes(query) ||
-          (p.compatibleModels || '').toLowerCase().includes(query)
+          (p.compatibleModels || '').toLowerCase().includes(query) ||
+          resolveDealerDisplayName(p).toLowerCase().includes(query)
         );
       }
       renderProducts(filtered);
+    }
+
+    function handleStoreSearch() {
+      applyStoreFilters();
+    }
+
+    function filterByDealer(dealerKey) {
+      selectedDealer = dealerKey || 'all';
+      applyStoreFilters();
     }
 
     function filterByBrand(brand, btn) {
@@ -474,21 +605,7 @@
       if (btn) {
         btn.className = 'brand-filter-btn min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-slate-900 text-white shadow-sm shrink-0';
       }
-
-      const searchInput = document.getElementById('store-search-input');
-      const query = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
-
-      let filtered = allProducts;
-      if (brand !== 'all') {
-        filtered = filtered.filter(p => (p.vehicleBrand || '').toLowerCase().includes(brand.toLowerCase()));
-      }
-      if (query) {
-        filtered = filtered.filter(p =>
-          (p.name || '').toLowerCase().includes(query) ||
-          (p.oeNumber || '').toLowerCase().includes(query)
-        );
-      }
-      renderProducts(filtered);
+      applyStoreFilters();
     }
 
     // Sepet İşlemleri
@@ -510,20 +627,24 @@
     }
 
     function addToCart(productId) {
-      const prod = allProducts.find(p => (p.tenantProductId === productId || p.productId === productId));
+      const prod = allProducts.find(p => (p.tenantProductId === productId || p.productId === productId || p.id === productId));
       if (!prod) return;
 
-      const existing = cart.find(it => it.tenantProductId === (prod.tenantProductId || prod.productId));
+      const dealerName = resolveDealerDisplayName(prod);
+      const existing = cart.find(it => it.tenantProductId === (prod.tenantProductId || prod.productId || prod.id));
       if (existing) {
         existing.qty += 1;
+        if (!existing.dealerName) existing.dealerName = dealerName;
       } else {
-        const lp = parseFloat(prod.defaultPrice || 500);
+        const lp = parseFloat(prod.customPrice || prod.defaultPrice || prod.price || 500);
         const np = parseFloat(prod.discountedPrice || (lp * 0.8));
         cart.push({
-          tenantProductId: prod.tenantProductId || prod.productId,
-          productId: prod.productId,
+          tenantProductId: prod.tenantProductId || prod.productId || prod.id,
+          productId: prod.productId || prod.id,
           name: prod.name,
           oeNumber: prod.oeNumber,
+          dealerName: dealerName,
+          tenantId: prod.tenantId || (prod.tenant && prod.tenant.id) || null,
           listPrice: lp,
           unitPrice: np,
           qty: 1
@@ -582,17 +703,28 @@
       let listTotal = 0;
       let subTotal = 0;
 
-      container.innerHTML = cart.map((it, idx) => {
+      const distinctDealers = Array.from(new Set(
+        cart.map(it => cleanDealerLabel(it.dealerName || '')).filter(d => d && d !== 'Yetkili Bayi')
+      ));
+      const splitNotice = distinctDealers.length > 1
+        ? `<div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-800"><strong>🏪 Çoklu Bayi Sepeti (${distinctDealers.length} Bayi):</strong> Ürünleriniz ${distinctDealers.map(escapeHtmlStore).join(', ')} bayilerine ayrı siparişler olarak iletilecektir.</div>`
+        : '';
+
+      container.innerHTML = splitNotice + cart.map((it, idx) => {
         const itemLpTotal = it.listPrice * it.qty;
         const itemNetTotal = it.unitPrice * it.qty;
         listTotal += itemLpTotal;
         subTotal += itemNetTotal;
+        const shortDealer = cleanDealerLabel(it.dealerName || '');
 
         return `
           <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
             <div class="flex-1 min-w-0">
-              <div class="text-xs font-mono text-slate-500 font-bold">${it.oeNumber}</div>
-              <div class="text-sm font-bold text-slate-900 truncate">${it.name}</div>
+              <div class="text-xs font-mono text-slate-500 font-bold flex items-center justify-between gap-2">
+                <span>${escapeHtmlStore(it.oeNumber)}</span>
+                ${shortDealer && shortDealer !== 'Yetkili Bayi' ? `<span class="font-sans text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 rounded truncate">🏪 ${escapeHtmlStore(shortDealer)}</span>` : ''}
+              </div>
+              <div class="text-sm font-bold text-slate-900 truncate">${escapeHtmlStore(it.name)}</div>
               <div class="text-xs text-orange-600 font-semibold mt-0.5">
                 ${it.unitPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺ × ${it.qty}
               </div>
@@ -658,10 +790,15 @@
           cart = [];
           updateCartUI();
           toggleCartDrawer();
+          const splitOrders = Array.isArray(res.orders) && res.orders.length > 0 ? res.orders : (res.data ? [res.data] : []);
+          const isSplit = splitOrders.length > 1;
           Swal.fire({
             icon: 'success',
-            title: 'Siparişiniz Alındı!',
-            text: res.message || 'Siparişiniz başarıyla Ahmet Oto yönetici onayına iletildi.',
+            title: isSplit ? `${splitOrders.length} Bayiye Siparişiniz Alındı!` : 'Siparişiniz Alındı!',
+            html: isSplit
+              ? `<div class="text-xs text-slate-600 space-y-2 text-left"><p class="text-center font-semibold">Ürünleriniz <strong>${splitOrders.length} ayrı bayiye</strong> otomatik bölünerek iletildi:</p><div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-1">${splitOrders.map(o => `<div class="flex justify-between"><strong>🏪 ${escapeHtmlStore(o.dealerName || (o.tenant && o.tenant.name) || 'Yetkili Bayi')}</strong><span class="font-mono font-bold text-orange-600">#${escapeHtmlStore(o.orderNumber || '')}</span></div>`).join('')}</div></div>`
+              : undefined,
+            text: isSplit ? undefined : (res.message || 'Siparişiniz başarıyla ilgili yetkili bayi onayına iletildi.'),
             confirmButtonColor: '#ea580c'
           });
           // Bakiyeyi güncelle
@@ -685,6 +822,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dParam = urlParams.get('dealer') || urlParams.get('seller') || urlParams.get('tenant') || urlParams.get('subdomain');
+        if (dParam && dParam.trim() && dParam.trim().toLowerCase() !== 'all') {
+          selectedDealer = dParam.trim().toLowerCase();
+        }
+      } catch (e) {}
+      loadStoreDealers();
       loadStoreProducts();
     });
   </script>

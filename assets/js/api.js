@@ -3130,6 +3130,16 @@
    */
   async function apiFetch(endpoint, options = {}) {
     // 1. Dinamik Tenant & Kullanıcı Bilgisi Çözümleme
+    const isDealerContext = (typeof window !== 'undefined' && window.location && (
+      window.location.pathname.includes('bayi.html') || 
+      window.location.pathname.includes('tenant.html')
+    )) || endpoint.includes('/tenant') || endpoint.includes('/bayi');
+
+    const isStoreEndpoint = !isDealerContext && (
+      endpoint.includes('/store') ||
+      (typeof window !== 'undefined' && window.location && window.location.pathname.includes('store.html'))
+    );
+
     let tenantId = options.tenantId || null;
     let tenantSlug = options.tenantSlug || options.subdomain || null;
 
@@ -3143,7 +3153,8 @@
     }
 
     // B. LocalStorage veya SessionStorage'dan tenantId ve tenantSlug oku
-    if (typeof localStorage !== 'undefined') {
+    // Ortak pazaryeri vitrininde (/store/* ve store.html) bayiye kilitlenmeyi önlemek için yalnızca explicit parametre yoksa enjekte edilir.
+    if (!isStoreEndpoint && typeof localStorage !== 'undefined') {
       if (!tenantId) tenantId = localStorage.getItem('tenantId') || localStorage.getItem('selectedTenantId');
       if (!tenantSlug) tenantSlug = localStorage.getItem('tenantSlug') || localStorage.getItem('subdomain');
       
@@ -3160,7 +3171,7 @@
     }
 
     // Eski/Mock slug kimliğini canlı Neon PostgreSQL UUID'sine dönüştür
-    if (tenantId === 'tenant-ahmet-oto') {
+    if (!isStoreEndpoint && tenantId === 'tenant-ahmet-oto') {
       tenantId = '51144f71-81dd-4f24-98d5-45fac505cfc2';
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('tenantId', tenantId);
@@ -3181,7 +3192,7 @@
       // Canlı Express API'ye sahte veya mock token gönderilemez (403 Forbidden fırlatır)
       if (rawToken.startsWith('standalone_jwt_') || rawToken.startsWith('mock_')) {
         rawToken = null;
-      } else if (!tenantId && typeof parseJwtPayload === 'function') {
+      } else if (!isStoreEndpoint && !tenantId && typeof parseJwtPayload === 'function') {
         const jwtPayload = parseJwtPayload(rawToken);
         if (jwtPayload && jwtPayload.tenantId) {
           tenantId = jwtPayload.tenantId;
@@ -3190,7 +3201,7 @@
     }
 
     // D. Hostname üzerinden subdomain / slug çözümleme
-    if (!tenantSlug && typeof window !== 'undefined' && window.location && window.location.hostname) {
+    if (!isStoreEndpoint && !tenantSlug && typeof window !== 'undefined' && window.location && window.location.hostname) {
       const parts = window.location.hostname.split('.');
       if (parts.length > 2 && parts[0] !== 'www' && parts[0] !== 'localhost') {
         tenantSlug = parts[0];
@@ -3198,15 +3209,11 @@
     }
 
     // E. Bayi Paneli (bayi.html) veya /tenant rotaları için güvenli aktif bayi fallback (Ahmet Oto)
-    const isDealerContext = (typeof window !== 'undefined' && window.location && (
-      window.location.pathname.includes('bayi.html') || 
-      window.location.pathname.includes('tenant.html')
-    )) || endpoint.includes('/tenant');
-
+    // Vitrin rotalarında (/store/* ve store.html) açıkça seçilmedikçe Tüm Aktif Bayiler (Çoklu Bayi Pazaryeri) listelenir.
     if (isDealerContext) {
       if (!tenantId || tenantId === 'tenant-ahmet-oto') tenantId = '51144f71-81dd-4f24-98d5-45fac505cfc2'; // Canlı sistemdeki birincil onaylı bayi ID'si
       if (!tenantSlug) tenantSlug = 'ahmetoto';
-    } else {
+    } else if (!isStoreEndpoint && !endpoint.includes('/auth/') && !endpoint.includes('/admin')) {
       if (!tenantSlug) tenantSlug = 'ahmetoto';
     }
 
